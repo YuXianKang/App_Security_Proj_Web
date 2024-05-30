@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sidebar Example</title>
+<style>
+    #sidebar {
+        min-width: 250px;
+        max-width: 250px;
+        min-height: 100vh;
+        background: #DED0B6;
+        transition: all 0.3s;
+        color: #b0926a;
+        font-family: 'Raleway', sans-serif;
+        font-size: 40px;
+        font-style: normal;
+        font-weight: 900;
+        line-height: normal;
+        border-right: 2px solid rgba(119, 107, 93, 0.50);
+    }
+
+    #sidebar.active {
+        margin-left: -250px;
+    }
+
+    #sidebar.sidebar-header {
+        padding: 20px;
+        background: #b0926a;
+        height: 100px!important;
+    }
+
+    #sidebar ul p {
+        color: #ffffff;
+        padding: 10px;
+        border-bottom: 2px solid rgba(119, 107, 93, 0.50);
+    }
+
+    #sidebar ul li a {
+        padding: 10px;
+        font-size: 1.1em;
+        display: block;
+        color: #fff!important;
+    }
+
+    #sidebar ul li:hover {
+        background: #fff;
+    }
+
+    #sidebar ul li.active > a, a[aria-expanded="true"] {
+        color: #fff;
+        background: #DED0B6;
+    }
+
+    ul ul a {
+        font-size: 0.9em!important;
+        padding-left: 30px!important;
+        background: #6d7fcc;
+    }
+
+    #sidebar ul li {
+        padding-top: 5px;
+        padding-bottom: 5px;
+        border-bottom: 2px solid rgba(119, 107, 93, 0.50);
+    }
+
+   .julius-font {
+        font-family: 'Julius Sans One', sans-serif;
+        font-weight: lighter;
+        font-size: 40px;
+    }
+</style>
+</head>
+<body>
+<nav id="sidebar" class="active">
+    <div class="sidebar-header">
+        <nav class="navbar">
+            <div class="col-sm"></div>
+        </nav>
+    </div>
+
+    <ul class="list-unstyled components">
+        <li>
+            <a class="nav-link" href="/">Home</a>
+        </li>
+        <li>
+            <a class="nav-link" href="/order">Order</a>
+        </li>
+        <li>
+            <a class="nav-link" href="/contactUs">Contact Us</a>
+        </li>
+        <li>
+            <a class="nav-link" href="#">About Us</a>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %} Payment {% endblock %}
+
+{% block content %}
+<style>
+  .container {
+        max-width: 600px; /* Adjust the width as needed */
+        margin: auto;
+    }
+
+  .flash-message {
+        margin-bottom: 10px;
+    }
+
+  .form-group1 {
+        margin-bottom: 15px;
+    }
+
+   .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #999;
+    }
+
+   .toggle-password:hover {
+        color: #666;
+    }
+
+   .position-relative {
+        position: relative;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="text-center">Payment</h2>
+
+    <form method="POST" action="{{ url_for('submit_payment') }}" class="mt-3">
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <div class="flash-message alert alert-danger">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        {% if not has_payment_details %}
+            <h4 class="mb-4">Add Payment Details:</h4>
+            <div class="form-check">
+                <input type="radio" id="new_payment" name="payment_detail" value="new_payment" checked class="form-check-input">
+                <label for="new_payment" class="form-check-label">Enter Card Details</label>
+
+                <div class="form-group1 position-relative">
+                    <input type="password" name="card_number" class="form-control" placeholder="Card Number" pattern="([0-9]{4} ){3}[0-9]{4}" title="Credit Card Num must be 16 digits (space between every 4 num)">
+                    <span class="toggle-password" onclick="togglePasswordVisibility(this)">
+                        <i class="fa fa-eye"></i>
+                    </span>
+                </div>
+                <div class="form-group1">
+                    <input type="text" name="expiration_date" class="form-control" placeholder="Expiration Date (MM/YY)" pattern="(0[1-9]|1[0-2])\/[0-9]{2}" title="Expiration date must be in MM/YY format">
+                </div>
+                <div class="form-group1 position-relative">
+                    <input type="password" name="cvv" class="form-control" placeholder="CVV" pattern="[0-9]{3}" title="CVV must be 3 digits">
+                    <span class="toggle-password" onclick="togglePasswordVisibility(this)">
+                        <i class="fa fa-eye"></i>
+                    </span>
+                </div>
+                <div class="form-group1">
+                    <input type="text" name="card_name" class="form-control" placeholder="Cardholder Name" pattern="[A-Z\s]+" title="Name must be in all uppercase">
+                </div>
+            </div>
+
+        {% else %}
+            <h4 class="mb-4">Select Payment Method:</h4>
+            {% for payment_detail in payment_details_list %}
+                <div class="form-check">
+                    <input type="radio" id="{{ payment_detail.id }}" name="payment_detail" value="{{ payment_detail.id }}" class="form-check-input">
+                    <label for="{{ payment_detail.id }}" class="form-check-label">
+                        {{ payment_detail.card_number }}
+                        ({{ payment_detail.card_name }})
+                    </label>
+                </div>
+            {% endfor %}
+        {% endif %}
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Submit Payment</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function togglePasswordVisibility(element) {
+    var inputField = element.previousElementSibling;
+    if (inputField.type === "password") {
+        inputField.type = "text";
+        element.innerHTML = '<i class="fa fa-eye-slash"></i>';
+    } else {
+        inputField.type = "password";
+        element.innerHTML = '<i class="fa fa-eye"></i>';
+    }
+}
+</script>
+{% endblock %}

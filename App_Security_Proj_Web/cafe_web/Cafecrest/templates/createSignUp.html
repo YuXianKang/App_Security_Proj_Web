@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}CafeCrest - Sign Up{% endblock %}
+
+{% block content %}
+
+
+<style>
+  body {
+    background-color: #b0926a;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+input{
+ height: 2rem;
+ margin-top: 1rem;
+ margin-bottom: 1rem;
+}
+
+
+#signup {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    padding: 10px;
+    border-radius: 25px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.div {
+width: 30%;
+length: 40%;
+margin: auto;
+}
+
+  h2{
+  text-align:center;
+
+}
+
+.signup-centered{
+padding-top: 3rem;
+width: 40%;
+    margin:auto;
+
+}
+
+
+</style>
+<div class="signup-centered">
+  <!-- signup.html -->
+<form method="POST" id="signup">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="text" name="firstn" placeholder="First Name" required>
+    <input type="text" name="lastn" placeholder="Last Name" required>
+    <input type="number" name="mobile" placeholder="Mobile Number" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+</form>
+</div>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+      <div>{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+{% endblock %}

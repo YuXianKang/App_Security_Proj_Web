@@ -1,0 +1,82 @@
+<style>
+.navbar{
+padding: 0 !important;
+height : 100px !important;
+z-index: 500;
+}
+  .bg-brown {
+  background-color: #b0926a;
+
+  }
+
+  .julius-font {
+  font-family: 'julius sans one';
+  font-weight: lighter;
+  font-size: 40px;
+}
+.navbar-toggling{
+padding:.25rem .75rem;font-size:1.25rem;line-height:1;background-color:transparent;border:1px solid transparent;border-radius:.25rem;transition:box-shadow .15s ease-in-out}@media (prefers-reduced-motion:reduce)
+  }
+
+.navbar-toggling:hover{
+    background-color:  #c7bba3;
+    }
+
+   button{
+   padding: 0;
+   border: none;
+background: none;
+border-radius: 10px;
+}
+
+.nav-search-button:hover{
+    background: #8c7454;
+    transition: 0.3s;
+}
+
+</style>
+
+
+<!-- Navbar -->
+<nav class="navbar bg-brown navbar-expand-sm navbar-dark navbar-fixed">
+ <div class="container-fluid">
+
+   <div>
+     <button class="navbar-toggling" type="button" id="sidebarCollapse" data-bs-target="#sidebar" data-bs-toggle="collapse">
+     <span class="navbar-toggler-icon"></span>
+   </button>
+   </div>
+   <div class="col-sm" >
+     <a class="navbar-brand julius-font" href="/">CaféCrest</a>
+   </div>
+
+
+   <!-- Navbar items -->
+   <div>
+     <ul class="navbar-nav">
+        <li>
+             <a class="nav-link" href="/logout">Logout</a>
+         </li>
+       <li class="nav-item">
+         <a class="nav-link" href="/retrieveSignUp">Retrieve Customers</a>
+       </li>
+       <li class="nav-item">
+         <a class="nav-link" href="/createStaffAccount">Create Staff Account</a>
+       </li>
+
+         <!-- Search form -->
+      <li class="nav-item">
+        <form action="/action_page.php">
+      <input type="text" placeholder="Search.." name="search">
+      <button class = "nav-search-button" type="submit"><i class="nav-link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+</svg></i></button>
+    </form>
+      </li>
+
+     </ul>
+   </div>
+ </div>
+</nav>
+<!-- End of Navbar -->
+

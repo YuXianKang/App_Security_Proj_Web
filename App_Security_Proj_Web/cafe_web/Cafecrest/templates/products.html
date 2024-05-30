@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %} ORDER {% endblock %}
+
+{% block content %}
+<style>
+    /* Shared Styles */
+    .product-container {
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        width: 200px;
+        max-height: 200px;
+        margin: auto;
+        display: block;
+    }
+
+    form {
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    label {
+        color: #8B4513;
+    }
+
+    /* Warm Tone Styles */
+    .warm-text {
+        color: #8B4513;
+    }
+
+    .warm-border {
+        border: 1px solid #8B4513;
+    }
+
+    .warm-button {
+        background-color: #FFFFFF;
+        color: #8B4513;
+        padding: 4px 8px;
+    }
+
+    .description-text {
+        color: #000000;
+    }
+
+    .quantity-field {
+        width: 50px;
+    }
+
+    /* Center-align the entire content */
+    .centered-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .flash-messages {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 300px;
+        max-height: 100px;
+        overflow-y: auto;
+        z-index: 1000;
+    }
+
+    .flash-message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 4px;
+    }
+</style>
+
+<div class="flash-messages">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.startswith('Product added to cart successfully') %}
+                    <div class="flash-message">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<div class="container centered-content">
+    <h2 class="text-center mb-4">Enjoy some food and drinks from Cafecrest</h2>
+
+    <h1 class="warm-text">Food</h1>
+
+    {% for product_id, product in food.items() %}
+        <div class="product-container warm-border">
+            <h3 class="warm-text">{{ product.name }}</h3>
+            <p class="warm-text">Price: ${{ product.price }}</p>
+            <p class="description-text">{{ product.description }}</p>
+            <img src="{{ product.image_path }}" alt="{{ product.name }}">
+            <form method="POST" action="{{ url_for('add_to_cart', product_id=product_id) }}">
+                <label for="quantity" class="warm-text">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" max="99" required class="quantity-field form-control mx-auto">
+                <button type="submit" class="warm-button btn mt-2">Add to Order</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    <h1 class="warm-text">Coffee</h1>
+    {% for product_id, product in coffee.items() %}
+        <div class="product-container warm-border">
+            <h3 class="warm-text">{{ product.name }}</h3>
+            <p class="warm-text">Price: ${{ product.price }}</p>
+            <p class="description-text">{{ product.description }}</p>
+            <img src="{{ product.image_path }}" alt="{{ product.name }}">
+            <form method="POST" action="{{ url_for('add_to_cart', product_id=product_id) }}">
+                <label for="quantity" class="warm-text">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" max="99" required class="quantity-field form-control mx-auto">
+                <button type="submit" class="warm-button btn mt-2">Add to Order</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    <h1 class="warm-text">Non-Coffee</h1>
+    {% for product_id, product in non_coffee.items() %}
+        <div class="product-container warm-border">
+            <h3 class="warm-text">{{ product.name }}</h3>
+            <p class="warm-text">Price: ${{ product.price }}</p>
+            <p class="description-text">{{ product.description }}</p>
+            <img src="{{ product.image_path }}" alt="{{ product.name }}">
+            <form method="POST" action="{{ url_for('add_to_cart', product_id=product_id) }}">
+                <label for="quantity" class="warm-text">Quantity:</label>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" max="99" required class="quantity-field form-control mx-auto">
+                <button type="submit" class="warm-button btn mt-2">Add to Order</button>
+            </form>
+        </div>
+
+
+<div class="card-group">
+  {% for product in products_list %}
+    <div class="card" style="width: 18rem;">
+      <img src="{{ url_for('serve_image', filename=product.photos, image_id=product.id) }}" alt="{{ product.name }}">
+      <div class="card-body">
+        <h5 class="card-title font-weight-bold">{{ product.name }}</h5>
+        <p class="card-text">{{ product.description }}</p>
+        <p class="card-text">{{ product.product }}</p>
+        <p class="card-text">${{ product.price }}</p>
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('update_product', id=product.id) }}" class="btn btn-warning">Update</a>
+          <form action="{{ url_for('delete_product', id=product.id) }}" method="POST" class="ml-auto">
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+    {% endfor %}
+</div>
+<a href="{{ url_for('view_cart') }}" class="btn btn-dark btn-warm mt-4">View Your Cart Order</a>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.customer_portal_margin {
+    display: flex;
+    justify-content: center; /* Center items horizontally */
+    flex-wrap: wrap;
+    gap: 3vw; /* Adds spacing between flex items */
+    margin-bottom: 3vw; /* Add some bottom margin for better spacing */
+}
+
+.customer_portal_margins {
+    text-align: center;
+    margin-bottom: 2vw;
+}
+
+.name_div {
+    width: 30vw;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: #FFF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2vw;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.name_div_secondary {
+    width: 100%;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: #F4DFC8;
+    padding: 1vw;
+    margin-top: 2vw;
+}
+
+.name_div_secondary hr {
+    width: 80%;
+    margin: 1vw auto;
+}
+
+.center {
+    text-align: center;
+    width: 100%;
+}
+
+.text-large {
+    font-size: 2.5vw;
+    font-weight: bold;
+    margin: 1vw 0;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.hyperlink {
+    color: #06F;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.2vw;
+    font-weight: 500;
+    text-decoration: underline;
+    margin: 1vw 0;
+    display: block;
+}
+
+.table {
+    width: 100%;
+    margin: 1vw 0;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 0.5vw;
+}
+
+.table th {
+    background: #f4f4f4;
+}
+
+.customer_information_div {
+    width: 62.5vw;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: #FFF;
+    padding: 2vw;
+    margin-top: 3vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.customer_information_div hr {
+    width: 80%;
+    margin: 2vw auto;
+}
+
+.division_maybe {
+    margin: 2vw 0;
+    text-align: center;
+}
+
+.division_maybe a {
+    color: #06F;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.division_maybe a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .name_div, .customer_information_div {
+        width: 90vw;
+        margin: 2vw auto;
+    }
+
+    .customer_portal_margins {
+        margin-left: 5vw;
+    }
+}
+</style>
+
+<div class="customer_portal_margins">
+    <h1>Customer Portal</h1>
+</div>
+<div class="customer_portal_margin">
+    <div class="name_div">
+        <div class="name_div_secondary">
+            <div class="center text-center">{{ user.username }}</div>
+            <hr>
+            <div class="center text-center">
+                <p>• member</p>
+                <p>• premium</p>
+            </div>
+        </div>
+        <div class="name_div_secondary">
+            <div class="center text-center">This Month</div>
+            <table class="table center text-center">
+                <tr>
+                    <th>Orders</th>
+                    <th>Points</th>
+                </tr>
+                <tr>
+                    <td>{{ user_orders_count }}</td>
+                    <td>50</td>
+                </tr>
+            </table>
+            <div class="center text-center">
+                <a class="center text-center hyperlink" href="/timetable">View Points</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="customer_information_div">
+        <div class="center text-center text-large">Information</div>
+        <hr>
+        <div class="customer_information_div_is">
+            <div class="division_maybe">
+                <a href="/orderHistory">View Order History</a>
+            </div>
+            <hr>
+            <div class="division_maybe">
+                Rewards
+            </div>
+            <hr>
+            <div class="division_maybe">
+                <a href="/account">Account Details</a>
+            </div>
+            <hr>
+            <div class="division_maybe">
+                <a href="/retrieve_payment">Payment Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

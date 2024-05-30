@@ -1,0 +1,55 @@
+<style>
+  .account-details p {
+        margin-bottom: 10px;
+    }
+
+  .btn-update-account,
+  .btn-delete-account {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+  .btn-update-account {
+        background-color: #ff6347; /* Tomato red for Update button */
+        color: white;
+    }
+
+  .btn-update-account:hover {
+        background-color: #ff4500; /* Darker shade of tomato red on hover */
+        color: white;
+    }
+
+  .btn-delete-account {
+        background-color: #dc143c; /* Crimson red for Delete button */
+        color: white;
+    }
+
+  .btn-delete-account:hover {
+        background-color: #8b0000; /* Darker shade of crimson red on hover */
+        color: white;
+    }
+</style>
+{% extends "base.html" %}
+{% block content %}
+<h1>Account Details</h1>
+<div class="account-details">
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>First Name:</strong> {{ user.firstn }}</p>
+    <p><strong>Last Name:</strong> {{ user.lastn }}</p>
+    <p><strong>Mobile Number:</strong> {{ user.mobile }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+
+    <!-- Placeholder for displaying other user details -->
+</div>
+
+<a href="{{ url_for('update_account') }}" class="btn btn-update-account">Update Account</a>
+
+<form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+    <button type="submit" class="btn btn-delete-account">Delete Account</button>
+</form>
+{% endblock %}

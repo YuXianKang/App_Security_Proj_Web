@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %} Payment Success {% endblock %}
+
+{% block content %}
+<style>
+    .container {
+        max-width: 800px; /* Adjust the width as needed */
+        margin: auto;
+    }
+
+    .alert-success {
+        margin-top: 20px;
+    }
+
+    h4 {
+        margin-top: 20px;
+    }
+
+    table {
+        margin-top: 20px;
+    }
+
+    .mt-3 {
+        margin-top: 20px;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="text-center">Payment Successful</h2>
+
+    <div class="alert alert-success" role="alert">
+        Thank you for your payment. Your order has been successfully processed.
+    </div>
+
+    <h4>Order Details:</h4>
+    <ul>
+        <li><strong>Order ID:</strong> {{ order_id }}</li>
+        <li><strong>Amount:</strong> ${{ grand_total }}</li>
+        <li><strong>Collection Type:</strong> {{ collection_type }}</li>
+    </ul>
+
+    <h4>Order Items:</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+
+
+            {% for item in order_cart %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.price }}</td>
+                    <td>${{ item.quantity * item.price }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="mt-3">
+    For any inquiries or issues with your order, please contact our
+    <span class="text-primary">customer support</span>.
+    </p>
+
+    <div class="mt-3">
+        <a href="{{ url_for('home') }}" class="btn btn-primary">Back to Home</a>
+    </div>
+</div>
+{% endblock %}

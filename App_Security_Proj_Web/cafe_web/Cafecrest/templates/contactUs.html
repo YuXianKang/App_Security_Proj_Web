@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Library Loan System - Contact Us{% endblock %}
+
+{% block content %}
+<style>
+    h1, h2, p {
+        text-align: center;
+        font-family: 'Arial', sans-serif;
+        margin-bottom: 1rem; /* Adds space under headings and paragraphs */
+    }
+
+   .card {
+        margin-bottom: 2rem; /* Space between cards */
+        border-radius:.25rem; /* Rounded corners for cards */
+    }
+
+   .card-body {
+        padding: 1rem; /* Padding inside the card body */
+    }
+
+   .card-title {
+        margin-bottom:.5rem; /* Space under card titles */
+    }
+
+   .card-link {
+        display: inline-block; /* Makes the link behave like a button */
+        margin-top:.5rem; /* Space above the link */
+    }
+</style>
+
+<!-- HTML Content -->
+<body>
+    <h1 class="display-4">Contact Us</h1>
+    <br>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Connect With Us</h2>
+                        <p class="card-text">We love hearing from our customers, all questions, comments and feedback are always welcomed.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Feedback Form</h2>
+                        <p class="card-text">Your feedback really matters. <a href="/createFeedback" class="card-link">Share your thoughts!</a></p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Chatbot</h2>
+                        <p class="card-text">Our 24/7 <a href="/chatbot" class="card-link">Chatbot</a> can answer any questions you may have</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Contact Information</h2>
+                        <p class="card-text">Monday to Friday: 8.30am - 8:00pm (Excluding public holidays)<br>Tel: (65) 6991 8766 <br>Email: cafecrest@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}

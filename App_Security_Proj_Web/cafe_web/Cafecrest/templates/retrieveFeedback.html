@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}CafeCrest - Feedback Information{% endblock %}
+
+{% block content %}
+<h1 class="display-4">Feedback Information</h1>
+
+<div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Mobile Number</th>
+        <th>Service</th>
+        <th>Food</th>
+        <th>Feedback</th>
+        <th>Action</th> <!-- Added Action column -->
+      </tr>
+    </thead>
+    <tbody>
+        {% for feedback in feedbacks_list %}
+        <tr>
+            <td>{{ feedback.name }}</td>
+            <td>{{ feedback.mobile_no }}</td>
+            <td>{{ feedback.service }}</td>
+            <td>{{ feedback.food }}</td>
+            <td>{{ feedback.feedback }}</td>
+            <td>
+                    <form action="{{ url_for('delete_feedback', feedback_id=feedback.id) }}" method="POST">
+                        <input type="submit" value="Delete" class="btn btn-danger btn-delete" onclick="return confirm('Are you sure you want to delete this feedback details ?');">
+                    </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

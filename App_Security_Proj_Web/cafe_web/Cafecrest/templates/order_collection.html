@@ -1,0 +1,72 @@
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #F5F5F5;
+    }
+
+   .form-group0 {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+        width: 90%;
+        margin: 0 auto;
+        padding: 40px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(255, 211, 175, 0.19);
+        background-color: #E1C16E;
+        border-radius: 10px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+   .warm-text {
+        color: #8B4513;
+        font-weight: bold;
+    }
+
+   .warm-button {
+        background-color: #8B4513;
+        color: #FFD700;
+        padding: 12px 24px;
+        font-size: 18px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+   .warm-button:hover {
+        background-color: #DAA520;
+        transform: scale(1.05);
+    }
+
+   .form-control:focus {
+        border-color: #DAA520;
+    }
+</style>
+
+
+{% extends "base.html" %}
+{% block title %} ORDER COLLECTION {% endblock %}
+
+{% block content %}
+{% if not session.logged_in %}
+<p>Not signed in</p>
+<a href="/Login">click here to log in</a>
+<a href="/createSignUp">click here to sign up</a>
+{% else %}
+    {% from "includes/_formHelper.html" import render_field %}
+
+    <form method="post" class="form-group0">
+        {{ render_field(form.collection_type, class="form-control warm-text") }}
+        <input type="submit" value="Enter" class="warm-button">
+    </form>
+{% endif %}
+{% endblock %}
+

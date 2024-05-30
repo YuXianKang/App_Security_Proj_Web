@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}CafeCrest - ChatBot{% endblock %}
+
+{% block content %}
+    <style>
+        .message {
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 10px;
+            display: inline-block;
+            max-width: 80%;
+            clear: both
+        }
+        .user {
+            background-color: #dcf8c6; /* Light green background for user messages */
+            margin-right: 20px;
+            text-align: right;
+            float: right;
+        }
+        .bot {
+            background-color: #f0f0f0; /* Light grey background for chatbot messages */
+            margin-left: 20px;
+            text-align: left;
+            float: left; /* Float chatbot messages to the left */
+        }
+        #chatbox {
+            border: 10px solid #b0926a;
+            padding: 10px;
+            margin: 10px 0;
+            height: 300px;
+            width: 400px;
+            overflow-y: scroll;
+
+
+
+        }
+        .user-message {
+            align-self: flex-end;
+            background-color: #dcf8c6;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: #f0f0f0;
+        }
+
+
+        #userInput {
+            width: 69%;
+        }
+        #sendButton {
+            width: 10%;
+
+        }
+        h2 {
+
+            font-size: 60px;
+
+            }
+    .chatbot-centered{
+    width: 40%;
+        margin: auto;
+
+    }
+        }
+    </style>
+
+    <div class="chatbot-centered">
+<h2 class="display-4">Chatbot</h2>
+    <div id="chatbox"></div>
+    <input type="text" id="userInput" placeholder="Type a message...">
+    <button id="sendButton">Send</button>
+</div>
+
+
+    <script>
+        document.getElementById("sendButton").onclick = function() {
+            var userMessage = document.getElementById("userInput").value;
+            if (userMessage.trim() !== '') {
+                displayMessage(userMessage, 'user');
+                sendMessage(userMessage);
+                document.getElementById("userInput").value = ''; // Clear input field
+            }
+        };
+
+       function displayMessage(message, sender) {
+    var chatbox = document.getElementById("chatbox");
+    var msgDiv = document.createElement("div");
+    msgDiv.textContent = message;
+
+    // Apply different classes based on the sender
+    if(sender === 'user') {
+        msgDiv.className = "message user"; // Use className to set the class
+    } else {
+        msgDiv.className = "message bot";
+    }
+
+    chatbox.appendChild(msgDiv);
+
+    // Automatically scroll to the bottom
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    // Remove float styles after appending the message to ensure the chatbox scrolls correctly
+    chatbox.style.alignItems = sender === 'user' ? 'flex-end' : 'flex-start';
+}
+
+
+        function sendMessage(message) {
+            fetch('/ChatBot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({message: message}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayMessage(data.response, 'bot');
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                displayMessage("Error connecting to the chat service.", 'bot');
+            });
+        }
+    </script>
+{% endblock %}

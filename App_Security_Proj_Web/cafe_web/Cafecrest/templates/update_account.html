@@ -1,0 +1,79 @@
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin: auto;
+    }
+
+    label {
+        margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"] {
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    input[type="submit"] {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    @media (max-width: 600px) {
+        form {
+            padding: 10px;
+            width: 90%;
+        }
+    }
+</style>
+
+{% extends "base.html" %}
+{% block content %}
+<h2>Update Account</h2>
+<form action="{{ url_for('update_account') }}" method="post">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" value="{{ user.username }}" required>
+
+    <label for="firstn">First Name:</label>
+    <input type="text" id="firstn" name="firstn" value="{{ user.firstn }}" required>
+
+    <label for="lastn">Last Name:</label>
+    <input type="text" id="lastn" name="lastn" value="{{ user.lastn }}" required>
+
+    <label for="mobile">Mobile Number:</label>
+    <input type="number" id="mobile" name="mobile" value="{{ user.mobile }}" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" value="{{ user.password }}" required>
+
+    <button type="submit">Submit</button>
+</form>
+{% endblock %}
