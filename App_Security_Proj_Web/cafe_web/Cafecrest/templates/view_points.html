@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+  .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    p {
+        color: #666;
+    }
+
+  .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+  .table th,.table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+  .table th {
+        background-color: #f2f2f2;
+    }
+
+  .hyperlink {
+        color: #06F;
+        text-decoration: none;
+    }
+
+  .hyperlink:hover {
+        text-decoration: underline;
+    }
+
+    /* Additional styles for enhancements */
+  .card {
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        transition: 0.3s;
+        border-radius: 5px;
+    }
+
+  .card:hover {
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    }
+
+  .btn-primary {
+        background-color: #007bff;
+        border: none;
+        color: white;
+        padding: 10px 24px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+</style>
+
+<div class="container">
+    <h1 class="text-center mb-4"><i class="fas fa-trophy"></i> Your Points and Category</h1>
+    <p class="welcome-message mb-3">
+    Welcome, <span class="font-weight-bold">{{ username }}</span> 🎉
+    </p>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Membership Tier</h5>
+                    <ul class="list-unstyled">
+                        {% if category == "Platinum" %}
+                            <li><i class="fas fa-medal"></i> Platinum Member</li>
+                        {% elif category == "Gold" %}
+                            <li><i class="fas fa-star"></i> Gold Member</li>
+                        {% elif category == "Silver" %}
+                            <li><i class="fas fa-star-half-alt"></i> Silver Member</li>
+                        {% elif category == "Bronze" %}
+                            <li><i class="fas fa-star"></i> Bronze Member</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Points Breakdown</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Points Earned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Order</td>
+                        <td>{{ user_points_value }}</td>
+                    </tr>
+                    <tr>
+                        <td>Feedback</td>
+                        <td>0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Progress Towards Next Level</h5>
+            <p>Current Points: <span class="font-weight-bold">{{ user_points_value }}</span></p>
+            <p>Threshold for Next Level: <span class="font-weight-bold">{{ next_level_threshold }}</span></p>
+            <p>Points Needed: <span class="font-weight-bold">{{ next_level_threshold - user_points_value }}</span></p>
+        </div>
+    </div>
+
+    <a href="{{ url_for('home') }}" class="btn btn-primary">Return Home</a>
+</div>
+
+{% endblock %}

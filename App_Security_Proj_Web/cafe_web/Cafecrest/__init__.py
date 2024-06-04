@@ -312,7 +312,7 @@ def customer_portal():
             user_category = "Platinum"
         elif user_points_value >= 500:
             user_category = "Gold"
-        elif user_points_value != 0:
+        elif user_points_value >= 100:
             user_category = "Silver"
         else:
             user_category = "Bronze"
@@ -413,6 +413,36 @@ def delete_account():
 
     # Redirect to home page
     return redirect(url_for('home'))
+
+
+@app.route('/view_points')
+def view_points():
+    if 'username' not in session:
+        flash('You must be logged in to view your points.', 'danger')
+        return redirect(url_for('login'))
+
+    username = session['username']
+    user_points = UserPoints.query.filter_by(username=username).first()
+    if user_points:
+        user_points_value = user_points.points
+        if user_points_value >= 1000:  # Platinum level
+            category = "Platinum"
+            next_level_threshold = None  # Threshold for moving up from Platinum
+        elif user_points_value >= 500:  # Gold level
+            category = "Gold"
+            next_level_threshold = 1000  # Threshold for moving up from Gold
+        elif user_points_value >= 100:  # Silver level
+            category = "Silver"
+            next_level_threshold = 500  # Threshold for moving up from Silver
+        else:  # Bronze level
+            category = "Bronze"
+            next_level_threshold = 100  # Threshold for moving up from Bronze
+
+        points_needed = next_level_threshold - user_points_value
+
+        return render_template('view_points.html', username=username, user_points_value=user_points_value, category=category, next_level_threshold=next_level_threshold, points_needed=points_needed)
+    else:
+        return redirect(url_for('home'))
 
 
 # Define a route and method to create a new product
