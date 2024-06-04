@@ -5,10 +5,10 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
-import uuid
 import payment_storage
 import os
 import shelve
+import uuid
 from Forms import payment, collection_type
 from products import food, coffee, non_coffee
 from Encryption_Payment import encrypt_data, decrypt_data
@@ -142,9 +142,19 @@ class Order(db.Model):
     username = db.Column(db.String(20), nullable=False)
     order_data = db.Column(db.String(120), nullable=False)
     items = db.Column(db.String(500), nullable=False)
+    total = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return f"Order('{self.items}')"
+
+
+class UserPoints(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), db.ForeignKey('user.username'), nullable=False)
+    points = db.Column(db.Integer, default=0)
+
+    def __repr__(self):
+        return f"<UserPoints {self.username} - {self.points}>"
 
 
 # Define a route for the home page
@@ -166,6 +176,7 @@ def create_staff_account():
             email = request.form.get('email')
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
+
             # Create a new user instance
             new_user = User(username=username, firstn=firstn, lastn=lastn, mobile=mobile, email=email, password=hashed_password, role="staff")
             db.session.add(new_user)
@@ -289,8 +300,25 @@ def customer_portal():
 
     # If user exists, render customer portal
     if user:
+        user_points = UserPoints.query.filter_by(username=session['username']).first()
+        if user_points:
+            user_points_value = user_points.points
+        else:
+            user_points_value = 0  # Default to 0 if no points record found
+
         user_orders_count = db.session.query(Order.id).filter_by(username=session['username']).count()
-        return render_template('CustomerPortal.html', user=user, user_orders_count=user_orders_count)
+
+        if user_points_value >= 1000:
+            user_category = "Platinum"
+        elif user_points_value >= 500:
+            user_category = "Gold"
+        elif user_points_value != 0:
+            user_category = "Silver"
+        else:
+            user_category = "Bronze"
+
+        # Pass user points to the template
+        return render_template('CustomerPortal.html', user=user, user_orders_count=user_orders_count, user_points_value=user_points_value, user_category=user_category)
     else:
         # If user doesn't exist, redirect to home page
         return redirect(url_for('home'))
@@ -351,22 +379,24 @@ def delete_account():
     if user:
         # Query for all payment_details associated with the user
         payment_details = Payment.query.filter_by(username=user.username).all()
-
         # Delete all payment_details associated with the user
         for payment_detail in payment_details:
             db.session.delete(payment_detail)
-
         # Commit the changes to the database
         db.session.commit()
 
         # Query for all orders associated with the user
         orders = Order.query.filter_by(username=user.username).all()
-
         # Delete all orders associated with the user
         for order in orders:
             db.session.delete(order)
-
         # Commit the changes to the database again
+        db.session.commit()
+
+        user_points = UserPoints.query.filter_by(username=user.username).first()
+        # Delete the user's points record
+        if user_points:
+            db.session.delete(user_points)
         db.session.commit()
 
         # Delete user from database
@@ -981,21 +1011,35 @@ def success_payment():
         delivery_amount = calculate_delivery_amount(collection_type)
         grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_type)
 
+        # Convert the grand total to cents for the calculation
+        grand_total_cents = int(grand_total * 100)
+
+        # Calculate points earned, giving 5 points per dollar spent
+        points_earned = 5 * (grand_total_cents // 100)
+
         extracted_items = []
         for item in order_cart:
-            extracted_items.append({'item_name': item['name'], 'item_price': item['price']})
+            extracted_items.append({item['name'], item['quantity']})
         itemize_json = str(extracted_items).replace("'", '"')
 
         # Create a new Order object and add it to the database
         new_order = Order(username=session["username"], id=order_id, order_data=port['collection_type'],
-                          items=itemize_json)
+                          items=itemize_json, total=grand_total)
         db.session.add(new_order)
+        db.session.commit()
+
+        user_points_record = UserPoints.query.filter_by(username=user.username).first()
+        if user_points_record:
+            user_points_record.points += points_earned
+        else:
+            new_points_record = UserPoints(username=user.username, points=points_earned)
+            db.session.add(new_points_record)
         db.session.commit()
 
         # Render the success page with order details
         order_db.close()
         return render_template('success_payment.html', order_id=order_id, order_data=order_data,
-                               grand_total=grand_total, collection_type=collection_type, order_cart=order_cart)
+                               grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
 
 
 @app.route('/orderHistory', methods=["GET"])

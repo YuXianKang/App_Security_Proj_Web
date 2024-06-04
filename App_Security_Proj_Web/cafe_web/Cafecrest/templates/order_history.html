@@ -10,6 +10,7 @@
                 <th>Order ID</th>
                 <th>Collection Type</th>
                 <th>Items</th>
+                <th>Grand Total</th>
             </tr>
         </thead>
         <tbody>
@@ -19,6 +20,7 @@
                 <td>{{ order.id }}</td>
                 <td>{{ order.order_data }}</td>
                 <td>{{ order.items }}</td>
+                <td>${{ order.total }}</td>
             </tr>
             {% endfor %}
         </tbody>

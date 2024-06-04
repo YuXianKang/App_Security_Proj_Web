@@ -135,8 +135,7 @@
             <div class="center text-center">{{ user.username }}</div>
             <hr>
             <div class="center text-center">
-                <p>• member</p>
-                <p>• premium</p>
+                <p>{{ user_category }}</p>
             </div>
         </div>
         <div class="name_div_secondary">
@@ -148,7 +147,7 @@
                 </tr>
                 <tr>
                     <td>{{ user_orders_count }}</td>
-                    <td>50</td>
+                    <td>{{ user_points_value }}</td>
                 </tr>
             </table>
             <div class="center text-center">
