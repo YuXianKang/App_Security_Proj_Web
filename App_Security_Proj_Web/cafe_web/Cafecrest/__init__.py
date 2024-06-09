@@ -166,6 +166,9 @@ def home():
 # Define a route and method to create a staff account
 @app.route('/createStaffAccount', methods=["GET", "POST"])
 def create_staff_account():
+    if session.get('role') != 'admin':
+        return "Access Denied", 403
+
     if request.method == "POST":
         try:
             # Retrieve form data
@@ -1130,6 +1133,9 @@ def create_feedback():
 
 @app.route('/retrieveFeedback')
 def retrieve_feedback():
+    if session.get('role') != 'admin':
+        return "Access Denied", 403
+
     feedbacks = Feed_back.query.all()
     feedbacks_list = []
 
