@@ -239,11 +239,14 @@ def login():
             session['username'] = user.username
             if user.username == "admin":
                 session['admin'] = True
+                session['role'] = 'admin'
             elif user.role == "staff":
                 session["staff"] = True
+                session['role'] = 'staff'
             elif user.role == "user":
                 session['logged_in'] = True
-            # Set the session cookie to be non-persistent
+                session['role'] = 'user'
+                # Set the session cookie to be non-persistent
             response = redirect(url_for('home'))
             response.set_cookie('session', '', max_age=0, httponly=True, secure=True)
             return response
@@ -427,13 +430,13 @@ def view_points():
         user_points_value = user_points.points
         if user_points_value >= 1000:  # Platinum level
             category = "Platinum"
-            next_level_threshold = None  # Threshold for moving up from Platinum
+            next_level_threshold = None
         elif user_points_value >= 500:  # Gold level
             category = "Gold"
-            next_level_threshold = 1000  # Threshold for moving up from Gold
+            next_level_threshold = 1000
         elif user_points_value >= 100:  # Silver level
             category = "Silver"
-            next_level_threshold = 500  # Threshold for moving up from Silver
+            next_level_threshold = 500
         else:  # Bronze level
             category = "Bronze"
             next_level_threshold = 100  # Threshold for moving up from Bronze
@@ -1079,6 +1082,18 @@ def order_history():
 
     if orders:
         return render_template('order_history.html', orders=orders, username=username)
+    else:
+        return redirect(url_for('home'))
+
+
+@app.route('/customerOrder', methods=["GET"])
+def customer_order():
+    if session.get('role') != 'staff':
+        return "Access Denied", 403
+    orders = Order.query.all()
+
+    if orders:
+        return render_template('customer_orders.html', orders=orders)
     else:
         return redirect(url_for('home'))
 

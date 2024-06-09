@@ -79,18 +79,51 @@
     </div>
 
     <ul class="list-unstyled components">
-        <li>
-            <a class="nav-link" href="/">Home</a>
-        </li>
-        <li>
-            <a class="nav-link" href="/order">Order</a>
-        </li>
-        <li>
-            <a class="nav-link" href="/contactUs">Contact Us</a>
-        </li>
-        <li>
-            <a class="nav-link" href="#">About Us</a>
-        </li>
+        {% if session.admin == True or session.staff == True %}
+            {% if session.admin == True %}
+                <li>
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="#">About Us</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="/createStaffAccount">Create Staff Account</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="/retrieveFeedback">Customer's Feedback</a>
+                </li>
+            {% elif session.staff == True %}
+                <li>
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="#">About Us</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="/createProduct">Add New Items</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="/retrieveProducts">View Added Items</a>
+                </li>
+                <li>
+                    <a class="nav-link" href="/customerOrder">Customer's Order</a>
+                </li>
+            {% endif %}
+        {% else %}
+            <li>
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            <li>
+                <a class="nav-link" href="/order">Order</a>
+            </li>
+            <li>
+                <a class="nav-link" href="/contactUs">Contact Us</a>
+            </li>
+            <li>
+                <a class="nav-link" href="#">About Us</a>
+            </li>
+        {% endif %}
     </ul>
 </nav>
 </body>
