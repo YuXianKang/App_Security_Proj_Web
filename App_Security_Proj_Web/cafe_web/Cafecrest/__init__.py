@@ -163,6 +163,11 @@ def home():
     return render_template('home.html')
 
 
+@app.route('/about_us')
+def about_us():
+    return render_template('about_us.html')
+
+
 # Define a route and method to create a staff account
 @app.route('/createStaffAccount', methods=["GET", "POST"])
 def create_staff_account():
@@ -294,42 +299,6 @@ def account():
         return redirect(url_for('home'))
 
 
-# Route for customer portal
-@app.route('/customerPortal/')
-def customer_portal():
-    if 'username' not in session:
-        flash('You must be logged in to view your account portal', 'danger')
-        return redirect(url_for('login'))
-
-    # Retrieve user data from database based on session username
-    user = User.query.filter_by(username=session['username']).first()
-
-    # If user exists, render customer portal
-    if user:
-        user_points = UserPoints.query.filter_by(username=session['username']).first()
-        if user_points:
-            user_points_value = user_points.points
-        else:
-            user_points_value = 0  # Default to 0 if no points record found
-
-        user_orders_count = db.session.query(Order.id).filter_by(username=session['username']).count()
-
-        if user_points_value >= 1000:
-            user_category = "Platinum"
-        elif user_points_value >= 500:
-            user_category = "Gold"
-        elif user_points_value >= 100:
-            user_category = "Silver"
-        else:
-            user_category = "Bronze"
-
-        # Pass user points to the template
-        return render_template('CustomerPortal.html', user=user, user_orders_count=user_orders_count, user_points_value=user_points_value, user_category=user_category)
-    else:
-        # If user doesn't exist, redirect to home page
-        return redirect(url_for('home'))
-
-
 # Route for updating user account
 @app.route('/account/update', methods=['GET', 'POST'])
 def update_account():
@@ -419,6 +388,41 @@ def delete_account():
 
     # Redirect to home page
     return redirect(url_for('home'))
+
+
+@app.route('/customerPortal/')
+def customer_portal():
+    if 'username' not in session:
+        flash('You must be logged in to view your account portal', 'danger')
+        return redirect(url_for('login'))
+
+    # Retrieve user data from database based on session username
+    user = User.query.filter_by(username=session['username']).first()
+
+    # If user exists, render customer portal
+    if user:
+        user_points = UserPoints.query.filter_by(username=session['username']).first()
+        if user_points:
+            user_points_value = user_points.points
+        else:
+            user_points_value = 0  # Default to 0 if no points record found
+
+        user_orders_count = db.session.query(Order.id).filter_by(username=session['username']).count()
+
+        if user_points_value >= 1000:
+            user_category = "Platinum"
+        elif user_points_value >= 500:
+            user_category = "Gold"
+        elif user_points_value >= 100:
+            user_category = "Silver"
+        else:
+            user_category = "Bronze"
+
+        # Pass user points to the template
+        return render_template('CustomerPortal.html', user=user, user_orders_count=user_orders_count, user_points_value=user_points_value, user_category=user_category)
+    else:
+        # If user doesn't exist, redirect to home page
+        return redirect(url_for('home'))
 
 
 @app.route('/view_points')
@@ -711,8 +715,7 @@ def add_to_cart(product_id):
         order_db.close()
         return redirect(url_for('home'))
 
-    # Retrieve the last order ID (or choose the appropriate order ID based on your logic)
-    order_id = list(orders.keys())[-1]  # Assuming you want the latest order, adjust as needed
+    order_id = list(orders.keys())[-1]  # Assuming you want the latest order
     collection_types = orders[order_id]['collection_type']
     order_db.close()
 
@@ -724,8 +727,7 @@ def add_to_cart(product_id):
         'quantity': int(request.form['quantity']),
         'order_id': order_id,
         'collection_type': collection_type,
-        'image_path': product['image_path']
-    }
+        'image_path': product['image_path']}
 
     try:
         # Retrieve or initialize the cart from the shelves database
@@ -783,12 +785,18 @@ def calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_types
 # Define a route for viewing the cart
 @app.route('/view_cart')
 def view_cart():
+    if 'username' not in session:
+        flash('You must be logged in to add payment details.', 'danger')
+        return redirect(url_for('login'))
+
+    if 'started_order_process' not in session:
+        flash("You must start the order process from the order-collection page.", "error")
+        return redirect(url_for('order_collection'))  # Redirect back to the order-collection page
+
     try:
-        # Retrieve order details from the shelves database
         with shelve.open('order.db', 'r') as order_db:
             orders = order_db.get('orders', {})
 
-            # Check if there are any orders
             if not orders:
                 return "Order not found"
 
@@ -796,10 +804,8 @@ def view_cart():
             order_id = list(orders.keys())[-1]
             collection_types = orders[order_id]['collection_type']
 
-            # Retrieve the cart from the shelves database
             cart = order_db.get('cart', {})
 
-            # Retrieve the order cart from the cart
             order_cart = cart.get(order_id, [])
 
             # Calculate various totals for rendering in the template
@@ -820,21 +826,17 @@ def view_cart():
 @app.route('/update_cart_item/<product_id>', methods=['POST', 'GET'])
 def update_cart_item(product_id):
     try:
-        # Retrieve order details from the shelves database
         order_db = shelve.open('order.db', 'r')
         orders = order_db.get('orders', {})
 
-        # Check if there are any orders
         if not orders:
             flash("Order not found", "error")
             order_db.close()
             return redirect(url_for('home'))
 
-        # Retrieve the last order ID
         order_id = list(orders.keys())[-1]  # Assuming you want the latest order
         order_db.close()
 
-        # Check if order details are available
         if not order_id:
             flash("Order not found", "error")
             return redirect(url_for('home'))
@@ -842,17 +844,14 @@ def update_cart_item(product_id):
         # Retrieve new quantity from the form
         new_quantity = request.form.get('quantity', '0')
         try:
-            # Convert the new_quantity to an integer
             new_quantity = int(new_quantity)
         except ValueError:
             flash("Invalid quantity value", "error")
             return redirect(url_for('view_cart'))
 
-        # Open the shelves database for cart update
         cart_db = shelve.open('order.db', 'c')
         cart = cart_db.get('cart', {})
 
-        # Update the quantity of the specified product in the cart
         for item in cart.get(order_id, []):
             if item['product_id'] == product_id:
                 item['quantity'] = new_quantity
@@ -871,28 +870,19 @@ def update_cart_item(product_id):
 @app.route('/remove_from_cart/<product_id>', methods=['POST'])
 def remove_from_cart(product_id):
     try:
-        # Retrieve order details from the shelves database
         with shelve.open('order.db', 'r') as order_db:
             orders = order_db.get('orders', {})
 
-            # Check if there are any orders
             if not orders:
-                # You can customize the error handling, such as redirecting to an error page
                 return redirect(url_for('home'))
 
-            # Retrieve the last order ID
             order_id = list(orders.keys())[-1]  # Assuming you want the latest order
 
-        # Check if order details are available
         if not order_id:
-            # You can customize the error handling, such as redirecting to an error page
             return redirect(url_for('home'))
 
-        # Open the shelves database for cart update
         with shelve.open('order.db', 'c') as cart_db:
             cart = cart_db.get('cart', {})
-
-            # Use list comprehension to create a new cart excluding the specified product_id
             new_cart = [item for item in cart.get(order_id, []) if item.get('product_id') != product_id]
 
             # Update the cart in the database

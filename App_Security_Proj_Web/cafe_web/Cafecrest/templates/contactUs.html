@@ -6,58 +6,66 @@
     h1, h2, p {
         text-align: center;
         font-family: 'Arial', sans-serif;
-        margin-bottom: 1rem; /* Adds space under headings and paragraphs */
+        margin-bottom: 1rem;
+    }
+
+     h2 {
+        margin-top: 0;
     }
 
    .card {
-        margin-bottom: 2rem; /* Space between cards */
-        border-radius:.25rem; /* Rounded corners for cards */
+        margin-bottom: 2rem;
+        border-radius:.25rem;
     }
 
    .card-body {
-        padding: 1rem; /* Padding inside the card body */
+        padding: 1rem;
     }
 
    .card-title {
-        margin-bottom:.5rem; /* Space under card titles */
+        margin-bottom:.5rem;
     }
 
    .card-link {
-        display: inline-block; /* Makes the link behave like a button */
-        margin-top:.5rem; /* Space above the link */
+        display: inline-block;
+        margin-top:.5rem;
+    }
+
+    .card {
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        margin-bottom: 30px;
+        padding: 20px;
+        transition: transform 0.15s ease-in-out;
+    }
+
+   .card:hover {
+        transform: translateY(-5px);
     }
 </style>
 
-<!-- HTML Content -->
 <body>
-    <h1 class="display-4">Contact Us</h1>
-    <br>
+    <h1 class="display-5">Contact Us</h1>
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
+                <!-- Each section wrapped in a card -->
                 <div class="card">
-                    <div class="card-body">
-                        <h2 class="card-title">Connect With Us</h2>
-                        <p class="card-text">We love hearing from our customers, all questions, comments and feedback are always welcomed.</p>
-                    </div>
+                    <h2 class="card-title">Connect With Us</h2>
+                    <p class="card-text">We love hearing from our customers, all questions, comments and feedback are always welcomed.</p>
                 </div>
                 <div class="card">
-                    <div class="card-body">
-                        <h2 class="card-title">Feedback Form</h2>
-                        <p class="card-text">Your feedback really matters. <a href="/createFeedback" class="card-link">Share your thoughts!</a></p>
-                    </div>
+                    <h2 class="card-title">Feedback Form</h2>
+                    <p class="card-text">Your feedback really matters. <a href="/createFeedback" class="card-link">Share your thoughts!</a></p>
                 </div>
                 <div class="card">
-                    <div class="card-body">
-                        <h2 class="card-title">Chatbot</h2>
-                        <p class="card-text">Our 24/7 <a href="/chatbot" class="card-link">Chatbot</a> can answer any questions you may have</p>
-                    </div>
+                    <h2 class="card-title">Chatbot</h2>
+                    <p class="card-text">Our 24/7 <a href="/chatbot" class="card-link">Chatbot</a> can answer any questions you may have</p>
                 </div>
                 <div class="card">
-                    <div class="card-body">
-                        <h2 class="card-title">Contact Information</h2>
-                        <p class="card-text">Monday to Friday: 8.30am - 8:00pm (Excluding public holidays)<br>Tel: (65) 6991 8766 <br>Email: cafecrest@gmail.com</p>
-                    </div>
+                    <h2 class="card-title">Contact Information</h2>
+                    <p class="card-text">Monday to Friday: 8.30am - 8:00pm (Excluding public holidays)<br>Tel: (65) 6991 8766 <br>Email: cafecrest@gmail.com</p>
                 </div>
             </div>
         </div>

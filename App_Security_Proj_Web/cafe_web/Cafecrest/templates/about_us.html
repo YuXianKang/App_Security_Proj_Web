@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}
+    About Us | CafeCrest
+{% endblock %}
+
+{% block content %}
+
+<style>
+  .about-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+
+  .about-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  h1,
+  h2 {
+    color: #333;
+    font-size: 28px;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin-top: 0;
+  }
+
+  h3 {
+    color: #666;
+    font-size: 22px;
+  }
+
+  .about{
+     text-align: center;
+     font-size: 21px;
+  }
+
+  p {
+    color: #444;
+    text-align: justify;
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+
+  a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .card {
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    margin-bottom: 30px;
+    padding: 20px;
+    transition: transform 0.15s ease-in-out;
+  }
+
+ .card:hover {
+    transform: translateY(-5px);
+  }
+</style>
+
+<div class="about-section">
+  <div class="about-header">
+    <h1>About CafeCrest</h1>
+    <p class="about">Pioneering coffee and food experiences.</p>
+  </div>
+
+  <!-- Each section wrapped in a card -->
+  <div class="card">
+    <h2>Our Mission</h2>
+    <p>At CafeCrest, we strive to redefine the coffee and food experience.<br>
+      Our mission is to bring you premium, ethically sourced, and eco-friendly coffee and food products. We believe in the importance of sustainability and giving back to the planet.</p>
+  </div>
+
+  <div class="card">
+    <h2>Sustainability at CafeCrest</h2>
+    <p>We understand that true success goes beyond just profits. <br>
+      That's why we're committed to minimizing our environmental impact and promoting sustainable practices.</p>
+  </div>
+
+  <div class="card">
+    <h2>Ethical Sourcing</h2>
+    <p>Every bean we serve has a story. We ensure they are grown and harvested with respect for the environment and the local communities. <br>
+      By supporting sustainable farming practices, we guarantee a positive impact on the planet and the people.</p>
+  </div>
+
+  <div class="card">
+    <h2>Reducing Waste</h2>
+    <p>We prioritize reducing waste across our operations. From biodegradable utensils made from wood, paper, and wheat to environmentally friendly packaging, we're conscious of our choices. <br>
+      Our low-carbon methods in preparing and packaging our offerings further emphasize our commitment to sustainability.</p>
+  </div>
+
+  <div class="card">
+    <h2>Culinary Excellence</h2>
+    <p>Our food menu is crafted with the same passion and care as our coffee. <br>
+      We source fresh, locally grown ingredients whenever possible, ensuring that every dish is not only delicious but also supports our community. Our chefs create innovative recipes that celebrate traditional flavors while incorporating sustainable cooking techniques.</p>
+  </div>
+
+  <div class="card">
+    <h2>Innovative Preparation Techniques</h2>
+    <p>We embrace innovative preparation techniques that not only enhance the taste of our dishes but also reduce our carbon footprint. <br>
+      From using solar-powered ovens during peak hours to implementing water-saving irrigation systems in our ingredient gardens, we're always looking for ways to make our kitchen greener.</p>
+  </div>
+
+  <div class="card">
+    <h2>Community and Collaboration</h2>
+    <p>CafeCrest is more than just a place to eat; it's a community hub where we collaborate with local farmers, artisans, and other businesses to create a vibrant ecosystem of support. <br>
+      Through partnerships and events, we aim to strengthen our ties with the community and promote a shared vision of sustainability and prosperity.</p>
+  </div>
+</div>
+
+{% endblock %}

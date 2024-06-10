@@ -4,7 +4,7 @@
 {% block content %}
 <style>
   .container {
-        max-width: 600px; /* Adjust the width as needed */
+        max-width: 600px;
         margin: auto;
     }
 
@@ -88,16 +88,5 @@
     </form>
 </div>
 
-<script>
-function togglePasswordVisibility(element) {
-    var inputField = element.previousElementSibling;
-    if (inputField.type === "password") {
-        inputField.type = "text";
-        element.innerHTML = '<i class="fa fa-eye-slash"></i>';
-    } else {
-        inputField.type = "password";
-        element.innerHTML = '<i class="fa fa-eye"></i>';
-    }
-}
-</script>
+<script src="paymentVisibility.js"></script>
 {% endblock %}

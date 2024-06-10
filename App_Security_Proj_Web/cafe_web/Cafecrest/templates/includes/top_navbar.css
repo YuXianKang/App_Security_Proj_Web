@@ -1,0 +1,45 @@
+  .navbar {
+        padding: 0!important;
+        height: 80px!important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+  .bg-brown {
+        background-color: #b0926a;
+    }
+  .julius-font {
+        font-family: 'Julius Sans One', sans-serif;
+        font-weight: lighter;
+        font-size: 30px;
+    }
+  .navbar-toggling {
+        padding:.25rem.75rem;
+        font-size: 1.25rem;
+        line-height: 1;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius:.25rem;
+        transition: box-shadow.15s ease-in-out;
+    }
+  .navbar-toggling:hover {
+        background-color: #c7bba3;
+    }
+  .nav-search-button:hover {
+        background: #8c7454;
+        transition: 0.3s;
+    }
+  button {
+        padding: 0;
+        border: none;
+        background: none;
+        border-radius: 10px;
+    }
+
+  @media (max-width: 768px) {
+       .navbar-nav {
+            flex-direction: column;
+        }
+       .navbar-brand {
+            margin-bottom: 10px;
+        }
+    }

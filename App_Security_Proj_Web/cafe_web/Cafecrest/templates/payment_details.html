@@ -96,14 +96,5 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-function togglePasswordVisibility(element) {
-    var inputField = element.previousElementSibling;
-    if (inputField.type === "password") {
-        inputField.type = "text";
-    } else {
-        inputField.type = "password";
-    }
-}
-</script>
+<script src="paymentVisibility.js"></script>
 {% endblock %}
