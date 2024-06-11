@@ -230,7 +230,6 @@ def signup():
     return render_template('createSignUp.html')
 
 
-# Route for user login
 @app.route("/Login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -238,10 +237,8 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # Retrieve user from database based on username
         user = User.query.filter_by(username=username).first()
 
-        # Check if user exists and password is correct
         if user and check_password_hash(user.password, password):
             # Set session variables based on user role
             session['username'] = user.username
@@ -259,17 +256,13 @@ def login():
             response.set_cookie('session', '', max_age=0, httponly=True, secure=True)
             return response
         else:
-            # If login is unsuccessful, display error message
             flash('Login Unsuccessful. Please check username and password')
 
-    # Render the login form
     return render_template('Login.html')
 
 
-# Route for user logout
 @app.route('/logout')
 def logout():
-    # Remove session data and redirect to home page
     session.clear()
     # Set the session cookie to be HTTP-only and non-persistent
     response = redirect(url_for('home'))
@@ -285,28 +278,39 @@ def check_session():
         return 'No active session found.'
 
 
-# Route for user account page
 @app.route('/account')
 def account():
-    # Retrieve user data from database based on session username
     user = User.query.filter_by(username=session['username']).first()
 
-    # If user exists, render account page
     if user:
         return render_template('account.html', user=user)
     else:
-        # If user doesn't exist, redirect to home page
         return redirect(url_for('home'))
 
 
-# Route for updating user account
+@app.route('/staff_accounts', methods=["GET"])
+def show_staff():
+    if session.get('role') != 'admin':
+        return "Access Denied", 403
+
+    staff = User.query.filter_by(role='staff').all()
+    return render_template('staff_accounts.html', staff=staff)
+
+
+@app.route('/customer_accounts', methods=["GET"])
+def show_customer():
+    if session.get('role') != 'admin':
+        return "Access Denied", 403
+
+    customer = User.query.filter_by(role='user').all()
+    return render_template('customer_accounts.html', customer=customer)
+
+
 @app.route('/account/update', methods=['GET', 'POST'])
 def update_account():
-    # Retrieve user data from database based on session username
     user = User.query.filter_by(username=session['username']).first()
 
     if request.method == 'POST':
-        # Get updated user information from form
         new_username = request.form['username']
         new_firstn = request.form['firstn']
         new_lastn = request.form['lastn']
@@ -315,7 +319,6 @@ def update_account():
         new_password = request.form['password']
         hashed_password = generate_password_hash(new_password)
 
-        # Check if new username or email already exists for other users
         existing_user = User.query.filter(
             User.id != user.id,
             (User.username == new_username) | (User.firstn == new_firstn) | (User.lastn == new_lastn) | (User.mobile == new_mobile) | (User.email == new_email) | (User.password == hashed_password)
@@ -326,7 +329,6 @@ def update_account():
             flash('Username or email already exists.', 'error')
             return redirect(url_for('update_account'))
 
-        # Update user information in the database
         user.username = new_username
         user.firstn = new_firstn
         user.lastn = new_lastn
@@ -334,56 +336,43 @@ def update_account():
         user.email = new_email
         user.password = hashed_password
 
-        # Update session with new username
         session['username'] = new_username
 
         db.session.commit()
         flash('Account successfully updated.', 'success')
         return redirect(url_for('account'))
 
-    # Render the update account form
     return render_template('update_account.html', user=user)
 
 
-# Route for deleting user account and all orders associated with the account
 @app.route('/account/delete', methods=['POST'])
 def delete_account():
-    # Retrieve user data from database based on session username
     user = User.query.filter_by(username=session['username']).first()
 
     if user:
-        # Query for all payment_details associated with the user
         payment_details = Payment.query.filter_by(username=user.username).all()
-        # Delete all payment_details associated with the user
         for payment_detail in payment_details:
             db.session.delete(payment_detail)
-        # Commit the changes to the database
         db.session.commit()
 
-        # Query for all orders associated with the user
         orders = Order.query.filter_by(username=user.username).all()
-        # Delete all orders associated with the user
         for order in orders:
             db.session.delete(order)
-        # Commit the changes to the database again
+
         db.session.commit()
 
         user_points = UserPoints.query.filter_by(username=user.username).first()
-        # Delete the user's points record
         if user_points:
             db.session.delete(user_points)
         db.session.commit()
 
-        # Delete user from database
         db.session.delete(user)
         db.session.commit()
 
-        # Remove session data and display success message
         session.pop('username', None)
         session.pop('logged_in', None)
         flash('Your account has been deleted.', 'success')
     else:
-        # If user not found, display error message
         flash('User not found.', 'danger')
 
     # Redirect to home page
