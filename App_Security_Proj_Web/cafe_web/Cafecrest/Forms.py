@@ -3,7 +3,7 @@ from wtforms import Form, StringField, validators, SelectField, ValidationError,
 
 class CreateProductForm(Form):
     name = StringField('Product name', [validators.Length(min=1, max=150), validators.DataRequired()])
-    product = StringField('Product type (food or drink)', [validators.Length(min=1, max=150), validators.DataRequired()])
+    product = StringField('Product type (food / coffee / non_coffee)', [validators.Length(min=1, max=150), validators.DataRequired()])
     description = StringField('Description', [validators.DataRequired()])
     price = IntegerField('Enter the price in $')
     photos = FileField('Photos', [validators.DataRequired()])
@@ -20,9 +20,12 @@ class payment (Form):
 class collection_type (Form):
     collection_type = SelectField('Collection Type', choices=[('pickup', 'In-Store Pickup'), ('dine-in', 'Dine-In')],)
 
+
 def validate_name(form, field):
     if field.data.isalpha() ==0:
         raise ValidationError('Name must only contain alphabets')
+
+
 def validate_mobile(form, field):
     if field.data.isdigit() ==0:
         raise ValidationError('Mobile number must only contain numbers')

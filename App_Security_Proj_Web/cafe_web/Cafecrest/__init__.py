@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_from_directory
+from Models import db, User, UserPoints, Payment, Product, Order, Feed_back, allowed_file, ALLOWED_EXTENSIONS, UPLOAD_FOLDER
 from Forms import CreateFeedbackForm, CreateProductForm, payment
 from ChatBot import chatbot_response
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
@@ -14,7 +14,6 @@ from products import food, coffee, non_coffee
 from Encryption_Payment import encrypt_data, decrypt_data
 from datetime import timedelta
 
-# Initialize Flask application
 app = Flask(__name__)
 
 # Configure database URI and secret key
@@ -22,142 +21,19 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=7)
 app.config['SESSION_PERMANENT'] = False
-
-# Initialize SQLAlchemy database
-db = SQLAlchemy(app)
-
-# Define allowed file extensions for uploading
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf', 'webp'}
-# Define upload folder for images
-UPLOAD_FOLDER = 'static'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Define a dictionary containing all products
+# Initialize SQLAlchemy database with the db instance from models.py
+db.init_app(app)
+
 all_products = {
     **food,
     **coffee,
     **non_coffee}
 
-# Define a global variable to store new product temporarily
 new_product = None
 
 
-# Define User model for the database
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    firstn = db.Column(db.String(50), nullable=False)
-    lastn = db.Column(db.String(50), nullable=False)
-    mobile = db.Column(db.String(8), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
-    role = db.Column(db.String(5), nullable=False)
-
-    def __repr__(self):
-        return f"User('{self.username}', '{self.firstn}', '{self.lastn}', '{self.mobile}' ,'{self.email}', '{self.role}')"
-
-
-class Payment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    card_number = db.Column(db.String(16), nullable=False)
-    expiration_date = db.Column(db.String(10), nullable=False)
-    cvv = db.Column(db.String(3), nullable=False)
-    card_name = db.Column(db.String(100), nullable=False)
-    username = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
-
-    def __repr__(self):
-        return f"<Payment(card_number={self.card_number}, expiration_date={self.expiration_date}, cvv={self.cvv}, card_name={self.card_name})>"
-
-
-class Product(db.Model):
-    __tablename__ = "prds"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    product = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.Integer, nullable=False)
-    photos = db.Column(db.Text, nullable=False)
-
-    def __init__(self, name, product, description, price, photos):
-        self.name = name
-        self.product = product
-        self.description = description
-        self.photos = photos
-        self.price = price
-
-    def set_product_id(self, value):
-        self.id = value
-
-    def get_product_id(self):
-        return self.id
-
-    def get_name(self):
-        return self.name
-
-    def set_name(self, value):
-        self.name = value
-
-    def get_price(self):
-        return self.price
-
-    def set_price(self, value):
-        self.price = value
-
-    def get_product(self):
-        return self.product
-
-    def set_product(self, value):
-        self.product = value
-
-    def get_description(self):
-        return self.description
-
-    def set_description(self, value):
-        self.description = value
-
-    def get_photos(self):
-        return self.photos
-
-    def set_photos(self, photos):
-        self.photos = photos.filename
-        self.save()
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-class Feed_back(db.Model):
-    __tablename__ = 'feedback'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    mobile_no = db.Column(db.String(15))
-    service = db.Column(db.String(50))
-    food = db.Column(db.String(50))
-    feedback = db.Column(db.Text)
-
-
-class Order(db.Model):
-    id = db.Column(db.String(64), primary_key=True)
-    username = db.Column(db.String(20), nullable=False)
-    order_data = db.Column(db.String(120), nullable=False)
-    items = db.Column(db.String(500), nullable=False)
-    total = db.Column(db.Float, nullable=False)
-
-    def __repr__(self):
-        return f"Order('{self.items}')"
-
-
-class UserPoints(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), db.ForeignKey('user.username'), nullable=False)
-    points = db.Column(db.Integer, default=0)
-
-    def __repr__(self):
-        return f"<UserPoints {self.username} - {self.points}>"
-
-
-# Define a route for the home page
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -325,7 +201,6 @@ def update_account():
         ).first()
 
         if existing_user:
-            # If username or email already exists, display error message
             flash('Username or email already exists.', 'error')
             return redirect(url_for('update_account'))
 
@@ -375,7 +250,6 @@ def delete_account():
     else:
         flash('User not found.', 'danger')
 
-    # Redirect to home page
     return redirect(url_for('home'))
 
 
@@ -385,10 +259,8 @@ def customer_portal():
         flash('You must be logged in to view your account portal', 'danger')
         return redirect(url_for('login'))
 
-    # Retrieve user data from database based on session username
     user = User.query.filter_by(username=session['username']).first()
 
-    # If user exists, render customer portal
     if user:
         user_points = UserPoints.query.filter_by(username=session['username']).first()
         if user_points:
@@ -478,7 +350,7 @@ def create_product():
 # Define a route to retrieve all products
 @app.route('/retrieveProducts')
 def retrieve_product():
-    products_list = CreateProductForm.product.query.all()
+    products_list = Product.query.all()
     return render_template('retrieveProduct.html', count=len(products_list), products_list=products_list)
 
 
@@ -540,7 +412,6 @@ def create_payment():
     user = User.query.filter_by(username=session['username']).first()
     if user:
         form = payment(request.form)
-        # Create an instance of the payment form
         if request.method == 'POST' and form.validate():
 
             encrypted_card_num = encrypt_data(form.card_number.data)
@@ -561,7 +432,6 @@ def retrieve_payment():
     if 'username' not in session:
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
-    # Query the database for payment records associated with the current user
     payments = Payment.query.filter_by(username=session['username']).all()
 
     # Prepare the payment details for rendering
@@ -592,10 +462,8 @@ def update_payment(id):
     if request.method == 'POST':
         form = Payment(request.form)
 
-        # Retrieve the payment record to update
         payment = Payment.query.get(id)
 
-        # Update the payment details
         payment.card_number = form.card_number.data
         payment.expiration_date = form.expiration_date.data
         payment.cvv = form.cvv.data
@@ -626,11 +494,9 @@ def delete_payment(id):
 # Define a route for selecting order collection type
 @app.route('/order', methods=['POST', 'GET'])
 def order_collection():
-    # Create an instance of the collection type form
     collection_Type = collection_type(request.form)
     session['started_order_process'] = True
 
-    # Check if the form is submitted and valid
     if request.method == 'POST' and collection_Type.validate():
         # Generate a unique order ID using UUID
         order_id = str(uuid.uuid4())
@@ -963,7 +829,6 @@ def submit_payment():
                 flash('Payment processed successfully.', 'success')
                 return redirect(url_for('success_payment'))
 
-            # If payment_detail is not 'new_payment' and is not null, assume it's an existing payment ID
             if payment_detail:
                 selected_payment = Payment.query.get(payment_detail)
                 if not selected_payment:
@@ -973,7 +838,6 @@ def submit_payment():
                 flash('Payment processed successfully.', 'success')
                 return redirect(url_for('success_payment'))
 
-            # Only proceed to the next steps if payment details are provided
             if payment_detail:
                 # Retrieve the order details from the shelves database
                 with shelve.open('order.db', 'r') as order_db:
@@ -1072,12 +936,9 @@ def order_history():
 def customer_order():
     if session.get('role') != 'staff':
         return "Access Denied", 403
-    orders = Order.query.all()
 
-    if orders:
-        return render_template('customer_orders.html', orders=orders)
-    else:
-        return redirect(url_for('home'))
+    orders = Order.query.all()
+    return render_template('customer_orders.html', orders=orders)
 
 
 @app.route('/contactUs')
