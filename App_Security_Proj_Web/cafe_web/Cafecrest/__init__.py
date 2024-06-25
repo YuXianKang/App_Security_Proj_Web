@@ -16,14 +16,12 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
-# Configure database URI and secret key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SECRET_KEY'] = 'Cafe_@_Crest'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=7)
 app.config['SESSION_PERMANENT'] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Initialize SQLAlchemy database with the db instance from models.py
 db.init_app(app)
 
 all_products = {
@@ -44,15 +42,13 @@ def about_us():
     return render_template('about_us.html')
 
 
-# Define a route and method to create a staff account
 @app.route('/createStaffAccount', methods=["GET", "POST"])
 def create_staff_account():
     if session.get('role') != 'admin':
-        return "Access Denied", 403
+        return "Access Denied. This feature requires admin-level access!", 403
 
     if request.method == "POST":
         try:
-            # Retrieve form data
             username = request.form.get('username')
             firstn = request.form.get('firstn')
             lastn = request.form.get('lastn')
@@ -61,7 +57,6 @@ def create_staff_account():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
 
-            # Create a new user instance
             new_user = User(username=username, firstn=firstn, lastn=lastn, mobile=mobile, email=email, password=hashed_password, role="staff")
             db.session.add(new_user)
             db.session.commit()
@@ -73,12 +68,10 @@ def create_staff_account():
     return render_template('createStaffSignUp.html')
 
 
-# Route for user signup
 @app.route("/createSignUp", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
         try:
-            # Get user input from form
             username = request.form.get('username')
             firstn = request.form.get('firstn')
             lastn = request.form.get('lastn')
@@ -87,18 +80,14 @@ def signup():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
 
-            # Create a new user object with the provided information
             new_user = User(username=username, firstn=firstn, lastn=lastn, mobile=mobile, email=email, password=hashed_password, role="user")
 
-            # Add the new user to the database
             db.session.add(new_user)
             db.session.commit()
 
-            # Redirect to home page after successful signup
             return redirect(url_for('home'))
 
         except IntegrityError:
-            # If the email already exists, rollback the session and redirect to login page
             db.session.rollback()
             flash('Email already registered. Please log in or use a different email.')
             return redirect(url_for('login'))
@@ -109,14 +98,12 @@ def signup():
 @app.route("/Login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        # Get username and password from form
         username = request.form.get('username')
         password = request.form.get('password')
 
         user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password, password):
-            # Set session variables based on user role
             session['username'] = user.username
             if user.username == "admin":
                 session['admin'] = True
@@ -127,7 +114,7 @@ def login():
             elif user.role == "user":
                 session['logged_in'] = True
                 session['role'] = 'user'
-                # Set the session cookie to be non-persistent
+
             response = redirect(url_for('home'))
             response.set_cookie('session', '', max_age=0, httponly=True, secure=True)
             return response
@@ -140,7 +127,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    # Set the session cookie to be HTTP-only and non-persistent
+
     response = redirect(url_for('home'))
     response.set_cookie('session', '', max_age=0, httponly=True, secure=True)
     return response
@@ -167,7 +154,7 @@ def account():
 @app.route('/staff_accounts', methods=["GET"])
 def show_staff():
     if session.get('role') != 'admin':
-        return "Access Denied", 403
+        return "Access Denied. This feature requires admin-level access!", 403
 
     staff = User.query.filter_by(role='staff').all()
     return render_template('staff_accounts.html', staff=staff)
@@ -176,7 +163,7 @@ def show_staff():
 @app.route('/customer_accounts', methods=["GET"])
 def show_customer():
     if session.get('role') != 'admin':
-        return "Access Denied", 403
+        return "Access Denied. This feature requires admin-level access!", 403
 
     customer = User.query.filter_by(role='user').all()
     return render_template('customer_accounts.html', customer=customer)
@@ -266,7 +253,7 @@ def customer_portal():
         if user_points:
             user_points_value = user_points.points
         else:
-            user_points_value = 0  # Default to 0 if no points record found
+            user_points_value = 0
 
         user_orders_count = db.session.query(Order.id).filter_by(username=session['username']).count()
 
@@ -279,10 +266,8 @@ def customer_portal():
         else:
             user_category = "Bronze"
 
-        # Pass user points to the template
         return render_template('CustomerPortal.html', user=user, user_orders_count=user_orders_count, user_points_value=user_points_value, user_category=user_category)
     else:
-        # If user doesn't exist, redirect to home page
         return redirect(url_for('home'))
 
 
@@ -296,18 +281,18 @@ def view_points():
     user_points = UserPoints.query.filter_by(username=username).first()
     if user_points:
         user_points_value = user_points.points
-        if user_points_value >= 1000:  # Platinum level
+        if user_points_value >= 1000:
             category = "Platinum"
             next_level_threshold = None
-        elif user_points_value >= 500:  # Gold level
+        elif user_points_value >= 500:
             category = "Gold"
             next_level_threshold = 1000
-        elif user_points_value >= 100:  # Silver level
+        elif user_points_value >= 100:
             category = "Silver"
             next_level_threshold = 500
         else:  # Bronze level
             category = "Bronze"
-            next_level_threshold = 100  # Threshold for moving up from Bronze
+            next_level_threshold = 100
 
         points_needed = next_level_threshold - user_points_value
 
@@ -316,19 +301,16 @@ def view_points():
         return redirect(url_for('home'))
 
 
-# Define a route and method to create a new product
 @app.route('/createProduct', methods=['GET', 'POST'])
 def create_product():
-    # Create a form instance for creating a product
     create_product_form = CreateProductForm(request.form)
     if request.method == 'POST':
-        # Retrieve file from the form
+
         file = request.files['photos']
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         photos = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        # Create a new product instance using form data
         new_product = CreateProductForm.product(
             name=create_product_form.name.data,
             product=create_product_form.product.data,
@@ -337,7 +319,6 @@ def create_product():
             photos=photos
         )
 
-        # Add the new product to the database
         db.session.add(new_product)
         db.session.commit()
 
@@ -347,21 +328,18 @@ def create_product():
     return render_template('createProduct.html', form=create_product_form)
 
 
-# Define a route to retrieve all products
 @app.route('/retrieveProducts')
 def retrieve_product():
     products_list = Product.query.all()
     return render_template('retrieveProduct.html', count=len(products_list), products_list=products_list)
 
 
-# Define a route and method to update a product
 @app.route('/updateProduct/<int:id>', methods=['GET', 'POST'])
 def update_product(id):
     # Retrieve product by ID from the database
     product = CreateProductForm.product.query.get_or_404(id)
     update_product_form = CreateProductForm(obj=product)
     if request.method == 'POST' and update_product_form.validate():
-        # Update product details with form data
         product.name = request.form['name']
         product.product = request.form['product']
         product.description = request.form['description']
@@ -381,7 +359,6 @@ def update_product(id):
     return render_template('updateProduct.html', form=update_product_form, product=product)
 
 
-# Define a route and method to delete a product
 @app.route('/deleteProduct/<int:id>', methods=['POST'])
 def delete_product(id):
     product = CreateProductForm.product.query.get_or_404(id)
@@ -426,7 +403,6 @@ def create_payment():
         return render_template('payment_details.html', form=form)
 
 
-# Define a route for retrieving payment details
 @app.route('/retrieve_payment')
 def retrieve_payment():
     if 'username' not in session:
@@ -434,13 +410,11 @@ def retrieve_payment():
         return redirect(url_for('login'))
     payments = Payment.query.filter_by(username=session['username']).all()
 
-    # Prepare the payment details for rendering
     payment_details_list = []
     for payment in payments:
-        # Decrypt the card number before masking & CVV
         decrypted_card_number = decrypt_data(payment.card_number)
         decrypted_cvv = decrypt_data(payment.cvv)
-        # Format the credit card number to show only the last 4 digits and mask the rest
+
         total_digits = len(decrypted_card_number)
         last_four_digits = decrypted_card_number[-4:]
         remaining_digits_masked = "*" * (total_digits - 4)
@@ -453,7 +427,6 @@ def retrieve_payment():
             'cvv': decrypted_cvv,
             'card_name': payment.card_name})
 
-    # Render the payment details retrieval page
     return render_template('view_payment_details.html', count=len(payment_details_list), payment_details_list=payment_details_list)
 
 
@@ -463,7 +436,6 @@ def update_payment(id):
         form = Payment(request.form)
 
         payment = Payment.query.get(id)
-
         payment.card_number = form.card_number.data
         payment.expiration_date = form.expiration_date.data
         payment.cvv = form.cvv.data
@@ -474,14 +446,12 @@ def update_payment(id):
         flash("Payment details updated successfully", "success")
         return redirect(url_for('retrieve_payment'))  # Assuming retrieve_payment is a valid endpoint
     else:
-        # Retrieve the payment record to pre-fill the form
         payment = Payment.query.get_or_404(id)
         form = Payment(card_number=payment.card_number, expiration_date=payment.expiration_date,  cvv=payment.cvv,  card_name=payment.card_name)
 
     return render_template('update_payment_details.html', form=form, id=id)
 
 
-# Define a route for deleting payment details
 @app.route('/delete_payment/<int:id>', methods=['POST'])
 def delete_payment(id):
     payment = Payment.query.get(id)
@@ -491,90 +461,73 @@ def delete_payment(id):
     return redirect(url_for('retrieve_payment'))
 
 
-# Define a route for selecting order collection type
 @app.route('/order', methods=['POST', 'GET'])
 def order_collection():
     collection_Type = collection_type(request.form)
     session['started_order_process'] = True
 
     if request.method == 'POST' and collection_Type.validate():
-        # Generate a unique order ID using UUID
         order_id = str(uuid.uuid4())
         order_data = {
             'order_id': order_id,
             'collection_type': collection_Type.collection_type.data
         }
 
-        # Store order data in the order database
         with shelve.open('order.db', 'c') as db:
             orders = db.get('orders', {})
             orders[order_id] = order_data
             db['orders'] = orders
 
-        # Initialize an empty cart for the order in the cart database
         with shelve.open('order.db', 'c') as db:
             cart = db.get('cart', {})
             cart[order_id] = []
             db['cart'] = cart
 
-        # Redirect to the product page
         return redirect(url_for('show_products'))
 
-    # Render the order collection type form
     return render_template('order_collection.html', form=collection_Type)
 
 
 @app.route('/products', endpoint='show_products')
 def show_products():
     try:
-        # Retrieve the order details from the shelves database
         with shelve.open('order.db', 'c') as order_db:
             orders = order_db.get('orders', {})
 
-            # Check if there are any orders
             if not orders:
                 return render_template('error.html', error_message="Order not found")
 
-            # Retrieve the last order ID (or choose the appropriate order ID based on your logic)
             order_id = list(orders.keys())[-1]  # Assuming you want the latest order, adjust as needed
 
-            # Retrieve the cart from the shelves database
             cart = order_db.get('cart', {})
             order_cart = cart.get(order_id, [])
 
         return render_template('products.html', food=food, coffee=coffee, non_coffee=non_coffee, cart=order_cart)
 
     except Exception as e:
-        # You can customize the error template or redirect to an error page
         return render_template('error.html', error_message=f"An error occurred: {str(e)}")
 
 
-# Define a route for adding products to the cart
 @app.route('/add_to_cart/<product_id>', methods=['POST'], endpoint='add_to_cart')
 def add_to_cart(product_id):
-    # Retrieve the selected product from the products dictionary
     product = all_products.get(product_id)
 
-    # Check if the product exists
     if not product:
         flash("Product not found", "error")
         return redirect(url_for('show_products'))
 
-    # Retrieve order details from the shelve database
     order_db = shelve.open('order.db', 'r')
     orders = order_db.get('orders', {})
 
-    # Check if there are any orders
     if not orders:
         flash("Order not found", "error")
         order_db.close()
         return redirect(url_for('home'))
 
-    order_id = list(orders.keys())[-1]  # Assuming you want the latest order
+    order_id = list(orders.keys())[-1]
     collection_types = orders[order_id]['collection_type']
     order_db.close()
 
-    # Create an item to be added to the cart
     item = {
         'product_id': product_id,
         'name': product['name'],
@@ -585,22 +538,18 @@ def add_to_cart(product_id):
         'image_path': product['image_path']}
 
     try:
-        # Retrieve or initialize the cart from the shelves database
         cart_db = shelve.open('order.db', 'c')
         cart = cart_db.get('cart', {})
         order_cart = cart.get(order_id, [])
 
-        # Check if the item is already in the cart
         for existing_item in order_cart:
             if existing_item['name'] == item['name']:
                 # If yes, update the quantity
                 existing_item['quantity'] += item['quantity']
                 break
         else:
-            # If not, add the item to the order cart
             order_cart.append(item)
 
-        # Update the cart in the shelves database
         cart[order_id] = order_cart
         cart_db['cart'] = cart
         cart_db.close()
@@ -637,7 +586,6 @@ def calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_types
         return round(subtotal + sales_tax, 2)
 
 
-# Define a route for viewing the cart
 @app.route('/view_cart')
 def view_cart():
     if 'username' not in session:
@@ -646,7 +594,7 @@ def view_cart():
 
     if 'started_order_process' not in session:
         flash("You must start the order process from the order-collection page.", "error")
-        return redirect(url_for('order_collection'))  # Redirect back to the order-collection page
+        return redirect(url_for('order_collection'))
 
     try:
         with shelve.open('order.db', 'r') as order_db:
@@ -655,7 +603,6 @@ def view_cart():
             if not orders:
                 return "Order not found"
 
-            # Retrieve the last order ID
             order_id = list(orders.keys())[-1]
             collection_types = orders[order_id]['collection_type']
 
@@ -663,13 +610,11 @@ def view_cart():
 
             order_cart = cart.get(order_id, [])
 
-            # Calculate various totals for rendering in the template
             subtotal = calculate_subtotal(order_cart)
             sales_tax = calculate_sales_tax(subtotal)
             delivery_amount = calculate_delivery_amount(collection_types)
             grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_types)
 
-        # Render the cart view page
         return render_template('view_cart.html', cart=order_cart, subtotal=subtotal, sales_tax=sales_tax,
                                delivery_amount=delivery_amount, grand_total=grand_total)
 
@@ -677,7 +622,6 @@ def view_cart():
         return f"An error occurred: {str(e)}"
 
 
-# Define a route for updating the quantity of a cart item
 @app.route('/update_cart_item/<product_id>', methods=['POST', 'GET'])
 def update_cart_item(product_id):
     try:
@@ -696,7 +640,6 @@ def update_cart_item(product_id):
             flash("Order not found", "error")
             return redirect(url_for('home'))
 
-        # Retrieve new quantity from the form
         new_quantity = request.form.get('quantity', '0')
         try:
             new_quantity = int(new_quantity)
@@ -711,7 +654,6 @@ def update_cart_item(product_id):
             if item['product_id'] == product_id:
                 item['quantity'] = new_quantity
 
-        # Save the updated cart back to the database
         cart_db['cart'] = cart
         cart_db.close()
 
@@ -721,7 +663,6 @@ def update_cart_item(product_id):
     return redirect(url_for('view_cart'))
 
 
-# Define a route for removing a product from the cart
 @app.route('/remove_from_cart/<product_id>', methods=['POST'])
 def remove_from_cart(product_id):
     try:
@@ -731,7 +672,7 @@ def remove_from_cart(product_id):
             if not orders:
                 return redirect(url_for('home'))
 
-            order_id = list(orders.keys())[-1]  # Assuming you want the latest order
+            order_id = list(orders.keys())[-1]
 
         if not order_id:
             return redirect(url_for('home'))
@@ -740,14 +681,12 @@ def remove_from_cart(product_id):
             cart = cart_db.get('cart', {})
             new_cart = [item for item in cart.get(order_id, []) if item.get('product_id') != product_id]
 
-            # Update the cart in the database
             cart[order_id] = new_cart
             cart_db['cart'] = cart
 
         return redirect(url_for('view_cart'))
 
     except Exception as e:
-        # Handle the exception - you can customize this based on your requirements
         return f"An error occurred: {str(e)}"
 
 
@@ -762,9 +701,8 @@ def payment_page():
 
     if 'started_order_process' not in session:
         flash("You must start the order process from the order-collection page.", "error")
-        return redirect(url_for('order_collection'))  # Redirect back to the order-collection page
+        return redirect(url_for('order_collection'))
 
-    # Reset the session variable after successful navigation to the payment page
     session.pop('started_order_process', None)
 
     user = User.query.filter_by(username=session['username']).first()
@@ -839,11 +777,9 @@ def submit_payment():
                 return redirect(url_for('success_payment'))
 
             if payment_detail:
-                # Retrieve the order details from the shelves database
                 with shelve.open('order.db', 'r') as order_db:
                     orders = order_db.get('orders', {})
 
-                    # Check if there are any orders
                     if not orders:
                         flash("Order not found", "error")
                         return redirect(url_for('home'))
@@ -854,16 +790,13 @@ def submit_payment():
                 return redirect(url_for('success_payment'))
 
         except Exception as e:
-            # Handle the exception - customize this based on your requirements
             flash(f"An error occurred: {str(e)}", "error")
 
 
-# Define a route for displaying success payment page
 @app.route('/success_payment')
 def success_payment():
     user = User.query.filter_by(username=session["username"]).first()
     if user:
-        # Retrieve the order details from the order database
         order_db = shelve.open('order.db', 'r')
         orders = order_db.get('orders', {})
 
@@ -872,28 +805,22 @@ def success_payment():
             order_db.close()
             return redirect(url_for('home'))
 
-        # Retrieve the last order ID
         order_id = list(orders.keys())[-1]
 
         order_data = orders.get(order_id)
         port = order_data
         collection_type = order_data['collection_type']
 
-        # Retrieve the order cart from the order database
         cart_db = shelve.open('order.db', 'r')
         order_cart = cart_db.get('cart', {}).get(order_id, [])
         cart_db.close()
 
-        # Calculate the totals
         subtotal = calculate_subtotal(order_cart)
         sales_tax = calculate_sales_tax(subtotal)
         delivery_amount = calculate_delivery_amount(collection_type)
         grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_type)
 
-        # Convert the grand total to cents for the calculation
         grand_total_cents = int(grand_total * 100)
-
-        # Calculate points earned, giving 5 points per dollar spent
         points_earned = 5 * (grand_total_cents // 100)
 
         extracted_items = []
@@ -901,7 +828,6 @@ def success_payment():
             extracted_items.append({item['name'], item['quantity']})
         itemize_json = str(extracted_items).replace("'", '"')
 
-        # Create a new Order object and add it to the database
         new_order = Order(username=session["username"], id=order_id, order_data=port['collection_type'],
                           items=itemize_json, total=grand_total)
         db.session.add(new_order)
@@ -915,7 +841,10 @@ def success_payment():
             db.session.add(new_points_record)
         db.session.commit()
 
-        # Render the success page with order details
+        with shelve.open('order.db', 'c')as sdb:
+            del sdb['orders'][order_id]
+            del sdb['cart'][order_id]
+
         order_db.close()
         return render_template('success_payment.html', order_id=order_id, order_data=order_data,
                                grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
@@ -934,8 +863,8 @@ def order_history():
 
 @app.route('/customerOrder', methods=["GET"])
 def customer_order():
-    if session.get('role') != 'staff':
-        return "Access Denied", 403
+    if session.get('role') == 'user':
+        return "Access Denied. This feature requires staff & admin level access!", 403
 
     orders = Order.query.all()
     return render_template('customer_orders.html', orders=orders)
@@ -974,7 +903,7 @@ def create_feedback():
 @app.route('/retrieveFeedback')
 def retrieve_feedback():
     if session.get('role') != 'admin':
-        return "Access Denied", 403
+        return "Access Denied. This feature requires admin-level access!", 403
 
     feedbacks = Feed_back.query.all()
     feedbacks_list = []

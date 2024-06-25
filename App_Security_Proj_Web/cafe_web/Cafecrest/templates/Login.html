@@ -1,69 +1,64 @@
 {% extends "base.html" %}
-{% block title %}CafeCrest - Login {% endblock %}
+
+{% block title %}CafeCrest - Login{% endblock %}
 
 {% block content %}
 <style>
-  body {
+    body {
+        background-color: #b0926a;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
 
-    background-color: #b0926a;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
+    #login {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        padding: 10px;
+        border-radius: 25px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+    }
 
-#login {
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    padding: 10px;
-    border-radius: 25px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
+   .div {
+        width: 100%;
+        margin: auto;
+    }
 
-}
+    h2 {
+        text-align: center;
+    }
 
+   .login-centered {
+        padding-top: 3rem;
+        width: 40%;
+        margin: auto;
+    }
 
-.div {
-width: 100%;
-margin: auto;
-}
-
-  h2{
-  text-align:center;
-
-}
-
-.login-centered{
-padding-top: 3rem;
-width: 40%;
-    margin:auto;
-
-}
-
-input{
- height: 2rem;
- margin-top: 1rem;
- margin-bottom: 1rem;
-}
-
-
+    input {
+        height: 2rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
 </style>
+
 <div class="login-centered">
-<form method="POST" id="login">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-</form>
+    <form method="POST" id="login">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
 </div>
 
 {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    {% for message in messages %}
-      <div>{{ message }}</div>
-    {% endfor %}
-  {% endif %}
+    {% if messages %}
+        {% for message in messages %}
+            <div>{{ message }}</div>
+        {% endfor %}
+    {% endif %}
 {% endwith %}
 {% endblock %}

@@ -2,8 +2,6 @@
 {% block title %}Customer Sign Up{% endblock %}
 
 {% block content %}
-
-
 <style>
   body {
     background-color: #b0926a;
@@ -13,16 +11,15 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-}
+  }
 
-input{
- height: 2rem;
- margin-top: 1rem;
- margin-bottom: 1rem;
-}
+  input {
+    height: 2rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
 
-
-#signup {
+  #signup {
     display: flex;
     flex-direction: column;
     background: #fff;
@@ -30,31 +27,27 @@ input{
     border-radius: 25px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-}
+  }
 
-.div {
-width: 30%;
-length: 40%;
-margin: auto;
-}
+ .div {
+    width: 30%;
+    height: 40%;
+    margin: auto;
+  }
 
-  h2{
-  text-align:center;
+  h2 {
+    text-align: center;
+  }
 
-}
-
-.signup-centered{
-padding-top: 3rem;
-width: 40%;
-    margin:auto;
-
-}
-
-
+ .signup-centered {
+    padding-top: 3rem;
+    width: 40%;
+    margin: auto;
+  }
 </style>
+
 <div class="signup-centered">
-  <!-- signup.html -->
-<form method="POST" id="signup">
+  <form method="POST" id="signup">
     <input type="text" name="username" placeholder="Username" required>
     <input type="text" name="firstn" placeholder="First Name" required>
     <input type="text" name="lastn" placeholder="Last Name" required>
@@ -62,8 +55,9 @@ width: 40%;
     <input type="email" name="email" placeholder="Email" required>
     <input type="password" name="password" placeholder="Password" required>
     <button type="submit">Sign Up</button>
-</form>
+  </form>
 </div>
+
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     {% for message in messages %}
