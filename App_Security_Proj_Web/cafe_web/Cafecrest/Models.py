@@ -15,10 +15,13 @@ class User(db.Model):
     mobile = db.Column(db.String(8), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
+    Key = db.Column(db.LargeBinary, nullable=True)
     role = db.Column(db.String(5), nullable=False)
+    login_attempts = db.Column(db.Integer, default=0)
+    lockout_time = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.firstn}', '{self.lastn}', '{self.mobile}' ,'{self.email}', '{self.role}')"
+        return f"User('{self.username}', '{self.firstn}', '{self.lastn}', '{self.mobile}' ,'{self.email}', '{self.role}', '{self.login_attempts}', '{self.default_time}')"
 
 
 class Payment(db.Model):

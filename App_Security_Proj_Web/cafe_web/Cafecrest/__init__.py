@@ -1,25 +1,30 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session, send_from_directory
-from Models import db, User, UserPoints, Payment, Product, Order, Feed_back, allowed_file, ALLOWED_EXTENSIONS, UPLOAD_FOLDER
-from Forms import CreateFeedbackForm, CreateProductForm, payment
+from flask import *
+from Models import *
+from Forms import *
 from ChatBot import chatbot_response
+from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
+from flask_cors import CORS
 import payment_storage
 import os
 import shelve
 import uuid
-from Forms import payment, collection_type
 from products import food, coffee, non_coffee
 from Encryption_Payment import encrypt_data, decrypt_data
-from datetime import timedelta
+from datetime import timedelta, datetime
+from Account_Lockout import max_attempts, lockout_duration
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.config['SECRET_KEY'] = 'Cafe_@_Crest'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=7)
 app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config["SESSION_COOKIE_SECURE"] = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db.init_app(app)
@@ -80,7 +85,9 @@ def signup():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
 
-            new_user = User(username=username, firstn=firstn, lastn=lastn, mobile=mobile, email=email, password=hashed_password, role="user")
+            key = Fernet.generate_key()
+
+            new_user = User(username=username, firstn=firstn, lastn=lastn, mobile=mobile, email=email, password=hashed_password, Key=key, role="user")
 
             db.session.add(new_user)
             db.session.commit()
@@ -102,8 +109,17 @@ def login():
         password = request.form.get('password')
 
         user = User.query.filter_by(username=username).first()
+        if user:
+            if user.lockout_time and datetime.now() < user.lockout_time:
+                remaining_time = (user.lockout_time - datetime.now()).seconds // 60
+                flash(f'Too many failed login attempts. Please try again in {remaining_time} minutes.')
+                return render_template('Login.html')
 
-        if user and check_password_hash(user.password, password):
+        if check_password_hash(user.password, password):
+            user.login_attempts = 0
+            user.lockout_time = None
+            db.session.commit()
+
             session['username'] = user.username
             if user.username == "admin":
                 session['admin'] = True
@@ -119,7 +135,15 @@ def login():
             response.set_cookie('session', '', max_age=0, httponly=True, secure=True)
             return response
         else:
-            flash('Login Unsuccessful. Please check username and password')
+            user.login_attempts += 1
+            if user.login_attempts >= max_attempts:
+                user.lockout_time = datetime.now() + timedelta(minutes=lockout_duration)
+                flash(f'Too many failed login attempts. Please try again in {lockout_duration} minutes')
+            else:
+                flash('Login Unsuccessful. Please check username and password.')
+    else:
+        flash('Login Unsuccessful. Please check username and password')
+    db.session.commit()
 
     return render_template('Login.html')
 
