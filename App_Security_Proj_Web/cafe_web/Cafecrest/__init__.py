@@ -7,17 +7,24 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from error_handle import eh as errors_bp
 import payment_storage
 import os
 import shelve
 import uuid
 from products import food, coffee, non_coffee
 from Encryption_Payment import encrypt_data, decrypt_data
+from Order_Calculation import *
 from datetime import timedelta, datetime
 from Account_Lockout import max_attempts, lockout_duration
 
 app = Flask(__name__)
+app.register_blueprint(errors_bp)
+
 CORS(app)
+limiter = Limiter(key_func=get_remote_address, app=app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.config['SECRET_KEY'] = 'Cafe_@_Crest'
@@ -48,6 +55,7 @@ def about_us():
 
 
 @app.route('/createStaffAccount', methods=["GET", "POST"])
+@limiter.limit("10/hour")
 def create_staff_account():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
@@ -74,6 +82,7 @@ def create_staff_account():
 
 
 @app.route("/createSignUp", methods=["GET", "POST"])
+@limiter.limit("10/hour")
 def signup():
     if request.method == "POST":
         try:
@@ -176,6 +185,7 @@ def account():
 
 
 @app.route('/staff_accounts', methods=["GET"])
+@limiter.limit("50/hour")
 def show_staff():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
@@ -185,6 +195,7 @@ def show_staff():
 
 
 @app.route('/customer_accounts', methods=["GET"])
+@limiter.limit("50/hour")
 def show_customer():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
@@ -194,6 +205,7 @@ def show_customer():
 
 
 @app.route('/account/update', methods=['GET', 'POST'])
+@limiter.limit("10/hour")
 def update_account():
     user = User.query.filter_by(username=session['username']).first()
 
@@ -232,6 +244,7 @@ def update_account():
 
 
 @app.route('/account/delete', methods=['POST'])
+@limiter.limit("10/hour")
 def delete_account():
     user = User.query.filter_by(username=session['username']).first()
 
@@ -405,6 +418,7 @@ def serve_image(filename):
 
 
 @app.route('/payment_details', methods=['GET', 'POST'])
+@limiter.limit("10/hour")
 def create_payment():
     if 'username' not in session:
         flash('You must be logged in to add payment details.', 'danger')
@@ -428,6 +442,7 @@ def create_payment():
 
 
 @app.route('/retrieve_payment')
+@limiter.limit("10/hour")
 def retrieve_payment():
     if 'username' not in session:
         flash('You must be logged in to add payment details.', 'danger')
@@ -455,6 +470,7 @@ def retrieve_payment():
 
 
 @app.route('/update_payment/<int:id>/', methods=['POST', 'GET'])
+@limiter.limit("10/hour")
 def update_payment(id):
     if request.method == 'POST':
         form = Payment(request.form)
@@ -477,6 +493,7 @@ def update_payment(id):
 
 
 @app.route('/delete_payment/<int:id>', methods=['POST'])
+@limiter.limit("5/hour")
 def delete_payment(id):
     payment = Payment.query.get(id)
     db.session.delete(payment)
@@ -486,6 +503,7 @@ def delete_payment(id):
 
 
 @app.route('/order', methods=['POST', 'GET'])
+@limiter.limit("10/hour")
 def order_collection():
     collection_Type = collection_type(request.form)
     session['started_order_process'] = True
@@ -568,7 +586,6 @@ def add_to_cart(product_id):
 
         for existing_item in order_cart:
             if existing_item['name'] == item['name']:
-                # If yes, update the quantity
                 existing_item['quantity'] += item['quantity']
                 break
         else:
@@ -580,37 +597,13 @@ def add_to_cart(product_id):
 
         flash("Product added to cart successfully", "success")
         return redirect(url_for('show_products'))
-    except Exception as e:
-        app.logger.error(f"Error in adding product to cart: {str(e)}")
+    except:
         flash("An error occurred while adding the product to your cart. Please try again later.", "error")
         return redirect(url_for('home'))
 
 
-def calculate_subtotal(cart):
-    subtotal = 0
-    for item in cart:
-        if isinstance(item, dict) and 'quantity' in item and 'price' in item:
-            subtotal += item['quantity'] * item['price']
-    subtotal = round(subtotal, 2)
-    return subtotal
-
-
-def calculate_sales_tax(subtotal):
-    return round(0.09 * subtotal, 2)
-
-
-def calculate_delivery_amount(collection_types):
-    return 5 if collection_types == 'delivery' else 0
-
-
-def calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_types):
-    if collection_types == 'delivery':
-        return round(subtotal + sales_tax + delivery_amount, 2)
-    else:
-        return round(subtotal + sales_tax, 2)
-
-
 @app.route('/view_cart')
+@limiter.limit("10/hour")
 def view_cart():
     if 'username' not in session:
         flash('You must be logged in to add payment details.', 'danger')
@@ -647,6 +640,7 @@ def view_cart():
 
 
 @app.route('/update_cart_item/<product_id>', methods=['POST', 'GET'])
+@limiter.limit("10/hour")
 def update_cart_item(product_id):
     try:
         order_db = shelve.open('order.db', 'r')
@@ -688,6 +682,7 @@ def update_cart_item(product_id):
 
 
 @app.route('/remove_from_cart/<product_id>', methods=['POST'])
+@limiter.limit("10/hour")
 def remove_from_cart(product_id):
     try:
         with shelve.open('order.db', 'r') as order_db:
@@ -715,6 +710,7 @@ def remove_from_cart(product_id):
 
 
 @app.route('/payment', methods=['GET', 'POST'])
+@limiter.limit("10/hour")
 def payment_page():
 
     payment_detail = None
@@ -751,6 +747,7 @@ def payment_page():
 
 
 @app.route('/submit_payment', methods=['POST'])
+@limiter.limit("10/hour")
 def submit_payment():
     if 'username' not in session:
         flash('You must be logged in to submit payment.', 'danger')
@@ -818,6 +815,7 @@ def submit_payment():
 
 
 @app.route('/success_payment')
+@limiter.limit("10/hour")
 def success_payment():
     user = User.query.filter_by(username=session["username"]).first()
     if user:
@@ -865,16 +863,17 @@ def success_payment():
             db.session.add(new_points_record)
         db.session.commit()
 
-        with shelve.open('order.db', 'c')as sdb:
-            del sdb['orders'][order_id]
-            del sdb['cart'][order_id]
-
+        with shelve.open('order.db', 'c') as order_db:
+            if 'orders' in order_db and order_id in order_db['orders']:
+                del order_db['orders'][order_id]
+            if 'cart' in order_db and order_id in order_db['cart']:
+                del order_db['cart'][order_id]
         order_db.close()
-        return render_template('success_payment.html', order_id=order_id, order_data=order_data,
-                               grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
+        return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
 
 
 @app.route('/orderHistory', methods=["GET"])
+@limiter.limit("20/hour")
 def order_history():
     username = session.get('username')
     orders = Order.query.filter_by(username=username).all()
@@ -886,6 +885,7 @@ def order_history():
 
 
 @app.route('/customerOrder', methods=["GET"])
+@limiter.limit("50/hour")
 def customer_order():
     if session.get('role') == 'user':
         return "Access Denied. This feature requires staff & admin level access!", 403
@@ -912,6 +912,7 @@ def chat_bot_message():
 
 
 @app.route('/createFeedback', methods=['GET', 'POST'])
+@limiter.limit("10/hour")
 def create_feedback():
     create_feedback_form = CreateFeedbackForm(request.form)
     if request.method == 'POST' and create_feedback_form.validate():
@@ -925,6 +926,7 @@ def create_feedback():
 
 
 @app.route('/retrieveFeedback')
+@limiter.limit("20/hour")
 def retrieve_feedback():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
@@ -939,6 +941,7 @@ def retrieve_feedback():
 
 
 @app.route('/deleteFeedback/<int:feedback_id>', methods=['POST'])
+@limiter.limit("10/hour")
 def delete_feedback(feedback_id):
     feedback_to_delete = Feed_back.query.get_or_404(feedback_id)
 
@@ -957,4 +960,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run()
-
