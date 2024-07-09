@@ -9,29 +9,24 @@ from sqlalchemy.exc import IntegrityError
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from datetime import timedelta, datetime
 from error_handle import eh as errors_bp
+from App_config import config
+from Account_Lockout import max_attempts, lockout_duration
 import payment_storage
 import os
 import shelve
 import uuid
 from products import food, coffee, non_coffee
 from Encryption_Payment import encrypt_data, decrypt_data
-from Order_Calculation import *
-from datetime import timedelta, datetime
-from Account_Lockout import max_attempts, lockout_duration
+from Order_Calculation import calculate_subtotal, calculate_sales_tax, calculate_grand_total, calculate_delivery_amount
 
 app = Flask(__name__)
+app.config.from_object(config)
 app.register_blueprint(errors_bp)
 
 CORS(app)
 limiter = Limiter(key_func=get_remote_address, app=app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config['SECRET_KEY'] = 'Cafe_@_Crest'
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=7)
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config["SESSION_COOKIE_SECURE"] = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db.init_app(app)
