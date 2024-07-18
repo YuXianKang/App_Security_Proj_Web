@@ -14,23 +14,23 @@ class User(db.Model):
     lastn = db.Column(db.String(50), nullable=False)
     mobile = db.Column(db.String(8), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(170), nullable=False)
     Key = db.Column(db.LargeBinary, nullable=True)
     role = db.Column(db.String(5), nullable=False)
     login_attempts = db.Column(db.Integer, default=0)
     lockout_time = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.firstn}', '{self.lastn}', '{self.mobile}' ,'{self.email}', '{self.role}', '{self.login_attempts}', '{self.default_time}')"
+        return f"User('{self.username}', '{self.firstn}', '{self.lastn}', '{self.mobile}' ,'{self.email}', '{self.role}', '{self.login_attempts}', '{self.lockout_time}')"
 
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    card_number = db.Column(db.String(16), nullable=False)
+    card_number = db.Column(db.String(130), nullable=False)
     expiration_date = db.Column(db.String(10), nullable=False)
     cvv = db.Column(db.String(3), nullable=False)
-    card_name = db.Column(db.String(100), nullable=False)
-    username = db.Column(db.String(20), db.ForeignKey('user.username'), nullable=False)
+    card_name = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(130), db.ForeignKey('user.username'), nullable=False)
 
     def __repr__(self):
         return f"<Payment(card_number={self.card_number}, expiration_date={self.expiration_date}, cvv={self.cvv}, card_name={self.card_name})>"
@@ -97,10 +97,10 @@ def allowed_file(filename):
 class Feed_back(db.Model):
     __tablename__ = 'feedback'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
+    name = db.Column(db.String(50))
     mobile_no = db.Column(db.String(15))
-    service = db.Column(db.String(50))
-    food = db.Column(db.String(50))
+    service = db.Column(db.String(70))
+    food = db.Column(db.String(70))
     feedback = db.Column(db.Text)
 
 

@@ -61,3 +61,10 @@ non_coffee = {
         'description': 'Melted dark and white chocolate combined with milk and water and also marshmallow',
         'image_path': 'https://feelgoodfoodie.net/wp-content/uploads/2021/11/how-to-make-hot-chocolate-7.jpg'}
 }
+
+
+all_products = {
+    **food,
+    **coffee,
+    **non_coffee}
+

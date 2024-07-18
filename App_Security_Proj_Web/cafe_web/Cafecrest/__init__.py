@@ -17,7 +17,7 @@ import payment_storage
 import os
 import shelve
 import uuid
-from products import food, coffee, non_coffee
+from products import food, coffee, non_coffee, all_products
 from Encryption_Payment import encrypt_data, decrypt_data
 from Order_Calculation import calculate_subtotal, calculate_sales_tax, calculate_grand_total, calculate_delivery_amount
 
@@ -30,11 +30,6 @@ limiter = Limiter(key_func=get_remote_address, app=app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db.init_app(app)
-
-all_products = {
-    **food,
-    **coffee,
-    **non_coffee}
 
 new_product = None
 
@@ -354,9 +349,7 @@ def create_product():
         db.session.add(new_product)
         db.session.commit()
 
-        # Retrieve all products from the database
-        products_list = CreateProductForm.product.query.all()
-        return render_template('retrieveProduct.html', count=len(products_list), products_list=products_list)
+        return redirect(url_for('retrieve_product'))
     return render_template('createProduct.html', form=create_product_form)
 
 
