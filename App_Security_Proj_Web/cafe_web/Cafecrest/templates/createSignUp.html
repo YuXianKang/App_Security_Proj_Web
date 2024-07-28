@@ -54,9 +54,11 @@
     <input type="number" name="mobile" placeholder="Mobile Number" required>
     <input type="email" name="email" placeholder="Email" required>
     <input type="password" name="password" placeholder="Password" required>
+    <div class="g-recaptcha" data-sitekey="6LdKdRcqAAAAAH8hbSx1-fPVrtAV7r5gfnPWlT9g"></div>
     <button type="submit">Sign Up</button>
   </form>
 </div>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 {% with messages = get_flashed_messages() %}
   {% if messages %}

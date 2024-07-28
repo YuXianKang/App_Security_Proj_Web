@@ -17,6 +17,7 @@ import payment_storage
 import os
 import shelve
 import uuid
+import requests
 from products import food, coffee, non_coffee, all_products
 from Encryption_Payment import encrypt_data, decrypt_data
 from Order_Calculation import calculate_subtotal, calculate_sales_tax, calculate_grand_total, calculate_delivery_amount
@@ -75,6 +76,19 @@ def create_staff_account():
 @limiter.limit("10/hour")
 def signup():
     if request.method == "POST":
+        recaptcha_response = request.form.get('g-recaptcha-response')
+        secret_key = '6LdKdRcqAAAAALvlHvSeepujVfzjSvHoHVjQjcgc'
+
+        recaptcha_verification = requests.post('https://www.google.com/recaptcha/api/siteverify', data={
+            'secret': secret_key,
+            'response': recaptcha_response
+        })
+        result = recaptcha_verification.json()
+
+        if not result.get('success'):
+            flash('reCAPTCHA verification failed. Please try again.')
+            return render_template('createSignUp.html')
+
         try:
             username = request.form.get('username')
             firstn = request.form.get('firstn')
@@ -104,6 +118,19 @@ def signup():
 @app.route("/Login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        recaptcha_response = request.form.get('g-recaptcha-response')
+        secret_key = '6LdKdRcqAAAAALvlHvSeepujVfzjSvHoHVjQjcgc'
+
+        recaptcha_verification = requests.post('https://www.google.com/recaptcha/api/siteverify', data={
+            'secret': secret_key,
+            'response': recaptcha_response
+        })
+        result = recaptcha_verification.json()
+
+        if not result.get('success'):
+            flash('reCAPTCHA verification failed. Please try again.')
+            return render_template('Login.html')
+
         username = request.form.get('username')
         password = request.form.get('password')
 
@@ -472,7 +499,7 @@ def update_payment(id):
         db.session.commit()
 
         flash("Payment details updated successfully", "success")
-        return redirect(url_for('retrieve_payment'))  # Assuming retrieve_payment is a valid endpoint
+        return redirect(url_for('retrieve_payment'))
     else:
         payment = Payment.query.get_or_404(id)
         form = Payment(card_number=payment.card_number, expiration_date=payment.expiration_date,  cvv=payment.cvv,  card_name=payment.card_name)
@@ -861,7 +888,7 @@ def success_payment():
 
 
 @app.route('/orderHistory', methods=["GET"])
-@limiter.limit("20/hour")
+# @limiter.limit("20/hour")
 def order_history():
     username = session.get('username')
     orders = Order.query.filter_by(username=username).all()
