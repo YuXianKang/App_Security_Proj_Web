@@ -28,7 +28,7 @@ class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     card_number = db.Column(db.String(130), nullable=False)
     expiration_date = db.Column(db.String(10), nullable=False)
-    cvv = db.Column(db.String(3), nullable=False)
+    cvv = db.Column(db.String(130), nullable=False)
     card_name = db.Column(db.String(50), nullable=False)
     username = db.Column(db.String(130), db.ForeignKey('user.username'), nullable=False)
 

@@ -28,12 +28,32 @@ app.register_blueprint(errors_bp)
 
 CORS(app)
 limiter = Limiter(key_func=get_remote_address, app=app)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Ensure the upload directory exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 db.init_app(app)
 
 new_product = None
 
+@app.route('/grant_admin/<int:user_id>', methods=['GET', 'POST'])
+def grant_admin(user_id):
+    if session.get('role') != 'admin':
+        return "Access Denied. This feature requires admin-level access!", 403
+
+    user = User.query.get_or_404(user_id)
+    if request.method == 'POST':
+        user.role = 'admin'
+        db.session.commit()
+        flash(f'User {user.username} has been granted admin privileges.', 'success')
+        return redirect(url_for('show_staff'))
+    return render_template('grant_admin.html', user=user)
 
 @app.route('/')
 def home():
@@ -147,7 +167,7 @@ def login():
             db.session.commit()
 
             session['username'] = user.username
-            if user.username == "admin":
+            if user.role == "admin":
                 session['admin'] = True
                 session['role'] = 'admin'
             elif user.role == "staff":
@@ -202,13 +222,21 @@ def account():
 
 
 @app.route('/staff_accounts', methods=["GET"])
-@limiter.limit("50/hour")
+# @limiter.limit("50/hour")
 def show_staff():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
 
     staff = User.query.filter_by(role='staff').all()
     return render_template('staff_accounts.html', staff=staff)
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted successfully.', 'success')
+    return redirect(url_for('show_staff'))
 
 
 @app.route('/customer_accounts', methods=["GET"])
@@ -219,6 +247,14 @@ def show_customer():
 
     customer = User.query.filter_by(role='user').all()
     return render_template('customer_accounts.html', customer=customer)
+
+@app.route('/delete_customer/<int:user_id>', methods=['POST'])
+def delete_customer(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('Customer deleted successfully.', 'success')
+    return redirect(url_for('show_customer'))
 
 
 @app.route('/account/update', methods=['GET', 'POST'])
@@ -355,42 +391,82 @@ def view_points():
         return redirect(url_for('home'))
 
 
+# @app.route('/createProduct', methods=['GET', 'POST'])
+# def create_product():
+#     create_product_form = CreateProductForm(request.form)
+#     if request.method == 'POST':
+#
+#         file = request.files['photos']
+#         filename = secure_filename(file.filename)
+#         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#         photos = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+#
+#         new_product = CreateProductForm.product(
+#             name=create_product_form.name.data,
+#             product=create_product_form.product.data,
+#             description=create_product_form.description.data,
+#             price=create_product_form.price.data,
+#             photos=photos
+#         )
+#
+#         db.session.add(new_product)
+#         db.session.commit()
+#
+#         return redirect(url_for('retrieve_product'))
+#     return render_template('createProduct.html', form=create_product_form)
+#
+
 @app.route('/createProduct', methods=['GET', 'POST'])
 def create_product():
     create_product_form = CreateProductForm(request.form)
     if request.method == 'POST':
+        if 'photos' not in request.files:
+            flash('No file part', 'error')
+            return redirect(request.url)
 
         file = request.files['photos']
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        photos = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        if file.filename == '':
+            flash('No selected file', 'error')
+            return redirect(request.url)
 
-        new_product = CreateProductForm.product(
-            name=create_product_form.name.data,
-            product=create_product_form.product.data,
-            description=create_product_form.description.data,
-            price=create_product_form.price.data,
-            photos=photos
-        )
+        if file:
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            photos = file_path
 
-        db.session.add(new_product)
-        db.session.commit()
+            new_product = Product(
+                name=create_product_form.name.data,
+                product=create_product_form.product.data,
+                description=create_product_form.description.data,
+                price=create_product_form.price.data,
+                photos=photos
+            )
 
-        return redirect(url_for('retrieve_product'))
+            db.session.add(new_product)
+            db.session.commit()
+
+            flash('Product created successfully!', 'success')
+            return redirect(url_for('retrieve_product'))
+
+        flash('File upload failed', 'error')
+        return redirect(request.url)
+
     return render_template('createProduct.html', form=create_product_form)
 
 
 @app.route('/retrieveProducts')
 def retrieve_product():
-    products_list = Product.query.all()
-    return render_template('retrieveProduct.html', count=len(products_list), products_list=products_list)
+    products = Product.query.all()
+    return render_template('retrieveProduct.html', products_list=products, count=len(products))
 
 
 @app.route('/updateProduct/<int:id>', methods=['GET', 'POST'])
 def update_product(id):
     # Retrieve product by ID from the database
-    product = CreateProductForm.product.query.get_or_404(id)
+    product = Product.query.get_or_404(id)
     update_product_form = CreateProductForm(obj=product)
+
     if request.method == 'POST' and update_product_form.validate():
         product.name = request.form['name']
         product.product = request.form['product']
@@ -398,31 +474,30 @@ def update_product(id):
         product.price = request.form['price']
 
         # If a new photo is provided, save it and update the product's photo path
-        if 'photos' in request.files and request.files['photos']:
+        if 'photos' in request.files and request.files['photos'].filename:
             photo_filename = secure_filename(request.files['photos'].filename)
-            if photo_filename and allowed_file(photo_filename):
-                request.files['photos'].save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
+            if allowed_file(photo_filename):
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)
+                request.files['photos'].save(file_path)
                 product.photos = photo_filename
 
         db.session.commit()
-        flash('Product updated successfully.')
+        flash('Product updated successfully.', 'success')
         return redirect(url_for('retrieve_product'))
 
     return render_template('updateProduct.html', form=update_product_form, product=product)
 
-
-@app.route('/deleteProduct/<int:id>', methods=['POST'])
+@app.route('/delete_product/<int:id>', methods=['POST'])
 def delete_product(id):
-    product = CreateProductForm.product.query.get_or_404(id)
+    product = Product.query.get_or_404(id)
     db.session.delete(product)
     db.session.commit()
 
-    # Remove the associated photo file
     photo_path = os.path.join(app.config['UPLOAD_FOLDER'], product.photos)
     if os.path.exists(photo_path):
         os.remove(photo_path)
 
-    flash('Product deleted successfully.')
+    flash('Product deleted successfully.', 'success')
     return redirect(url_for('retrieve_product'))
 
 
@@ -433,7 +508,7 @@ def serve_image(filename):
 
 
 @app.route('/payment_details', methods=['GET', 'POST'])
-@limiter.limit("10/hour")
+# @limiter.limit("10/hour")
 def create_payment():
     if 'username' not in session:
         flash('You must be logged in to add payment details.', 'danger')
@@ -457,7 +532,7 @@ def create_payment():
 
 
 @app.route('/retrieve_payment')
-@limiter.limit("10/hour")
+# @limiter.limit("10/hour")
 def retrieve_payment():
     if 'username' not in session:
         flash('You must be logged in to add payment details.', 'danger')
