@@ -110,6 +110,7 @@ def signup():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
 
+            # Check for spaces in fields
             if ' ' in username:
                 flash('Username cannot contain spaces.')
                 return render_template('createSignUp.html')
@@ -129,7 +130,7 @@ def signup():
                 flash('Password cannot contain spaces.')
                 return render_template('createSignUp.html')
 
-                # Password security checks
+            # Password security checks
             if len(password) < 8:
                 flash('Password must be at least 8 characters long.')
                 return render_template('createSignUp.html')
@@ -142,10 +143,11 @@ def signup():
             if not re.search(r'[0-9]', password):
                 flash('Password must contain at least one digit.')
                 return render_template('createSignUp.html')
-            if not re.search(r'[\W_]', password):
+            if not re.search(r'[\W_]', password):  # Checks for any non-alphanumeric character
                 flash('Password must contain at least one special character.')
                 return render_template('createSignUp.html')
 
+            # Check for duplicate username or email
             existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
             if existing_user:
                 if existing_user.username == username:
@@ -262,7 +264,7 @@ def account():
 
 
 @app.route('/staff_accounts', methods=["GET"])
-@limiter.limit("50/hour")
+# @limiter.limit("50/hour")
 def show_staff():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
@@ -468,6 +470,7 @@ def create_product():
 
         flash('File upload failed', 'error')
         return redirect(request.url)
+
     return render_template('createProduct.html', form=create_product_form)
 
 
