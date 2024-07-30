@@ -1,55 +1,106 @@
+{% extends "base.html" %}
+
 <style>
-  .account-details p {
-        margin-bottom: 10px;
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
     }
 
-  .btn-update-account,
-  .btn-delete-account {
+    .container {
+        max-width: 600px;
+        width: 100%;
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+    }
+
+    .account-details {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 30px;
+        width: 100%;
+    }
+
+    .account-details p {
+        margin-bottom: 10px;
+        color: #555;
+        text-align: center;
+    }
+
+    .btn-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .btn-update-account,
+    .btn-delete-account {
         display: inline-block;
         margin-top: 20px;
-        padding: 10px 20px;
+        padding: 12px 24px;
         border: none;
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s ease, color 0.3s ease;
+        font-size: 16px;
+        font-weight: 600;
     }
 
-  .btn-update-account {
-        background-color: #ff6347; /* Tomato red for Update button */
-        color: white;
+    .btn-update-account {
+        background-color: #007bff;
+        color: #fff;
     }
 
-  .btn-update-account:hover {
-        background-color: #ff4500; /* Darker shade of tomato red on hover */
-        color: white;
+    .btn-update-account:hover {
+        background-color: #0056b3;
+        color: #fff;
     }
 
-  .btn-delete-account {
-        background-color: #dc143c; /* Crimson red for Delete button */
-        color: white;
+    .btn-delete-account {
+        background-color: #dc3545;
+        color: #fff;
+        margin-left: 10px;
     }
 
-  .btn-delete-account:hover {
-        background-color: #8b0000; /* Darker shade of crimson red on hover */
-        color: white;
+    .btn-delete-account:hover {
+        background-color: #c82333;
+        color: #fff;
     }
 </style>
-{% extends "base.html" %}
+
 {% block content %}
-<h1>Account Details</h1>
-<div class="account-details">
-    <p><strong>Username:</strong> {{ user.username }}</p>
-    <p><strong>First Name:</strong> {{ user.firstn }}</p>
-    <p><strong>Last Name:</strong> {{ user.lastn }}</p>
-    <p><strong>Mobile Number:</strong> {{ user.mobile }}</p>
-    <p><strong>Email:</strong> {{ user.email }}</p>
-
-    <!-- Placeholder for displaying other user details -->
+<div class="container">
+    <h1>Account Details</h1>
+    <div class="account-details">
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>First Name:</strong> {{ user.firstn }}</p>
+        <p><strong>Last Name:</strong> {{ user.lastn }}</p>
+        <p><strong>Mobile Number:</strong> {{ user.mobile }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+    </div>
+    <div class="btn-container">
+        <a href="{{ url_for('update_account') }}" class="btn btn-update-account">Update Account</a>
+        <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+            <button type="submit" class="btn btn-delete-account">Delete Account</button>
+        </form>
+    </div>
 </div>
-
-<a href="{{ url_for('update_account') }}" class="btn btn-update-account">Update Account</a>
-
-<form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
-    <button type="submit" class="btn btn-delete-account">Delete Account</button>
-</form>
 {% endblock %}

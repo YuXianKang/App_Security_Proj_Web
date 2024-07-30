@@ -9,6 +9,7 @@ class Config(object):
     SESSION_PERMANENT = False
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = True
+    secret_key = '6LdKdRcqAAAAALvlHvSeepujVfzjSvHoHVjQjcgc'  # Google Recaptcha
 
 
 config = Config()

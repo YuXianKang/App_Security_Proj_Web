@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request
+from flask import jsonify, Blueprint, request, session
 
 eh = Blueprint('errors', __name__)
 
@@ -47,3 +47,11 @@ def gateway_timeout():
 @eh.errorhandler(Exception)
 def handle_all_errors(e):
     return create_error_response(500, title="Server Error", detail=str(e)), 500
+
+
+@eh.route('/check-session')
+def check_session():
+    if 'username' in session:
+        return 'Session is active.'
+    else:
+        return 'No active session found.'

@@ -13,6 +13,7 @@ from datetime import timedelta, datetime
 from error_handle import eh as errors_bp
 from App_config import config
 from Account_Lockout import max_attempts, lockout_duration
+import re
 import payment_storage
 import os
 import shelve
@@ -28,7 +29,18 @@ app.register_blueprint(errors_bp)
 
 CORS(app)
 limiter = Limiter(key_func=get_remote_address, app=app)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# Ensure the upload directory exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 db.init_app(app)
 
@@ -98,6 +110,50 @@ def signup():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
 
+            if ' ' in username:
+                flash('Username cannot contain spaces.')
+                return render_template('createSignUp.html')
+            if ' ' in firstn:
+                flash('First name cannot contain spaces.')
+                return render_template('createSignUp.html')
+            if ' ' in lastn:
+                flash('Last name cannot contain spaces.')
+                return render_template('createSignUp.html')
+            if ' ' in mobile:
+                flash('Mobile number cannot contain spaces.')
+                return render_template('createSignUp.html')
+            if ' ' in email:
+                flash('Email cannot contain spaces.')
+                return render_template('createSignUp.html')
+            if ' ' in password:
+                flash('Password cannot contain spaces.')
+                return render_template('createSignUp.html')
+
+                # Password security checks
+            if len(password) < 8:
+                flash('Password must be at least 8 characters long.')
+                return render_template('createSignUp.html')
+            if not re.search(r'[A-Z]', password):
+                flash('Password must contain at least one uppercase letter.')
+                return render_template('createSignUp.html')
+            if not re.search(r'[a-z]', password):
+                flash('Password must contain at least one lowercase letter.')
+                return render_template('createSignUp.html')
+            if not re.search(r'[0-9]', password):
+                flash('Password must contain at least one digit.')
+                return render_template('createSignUp.html')
+            if not re.search(r'[\W_]', password):
+                flash('Password must contain at least one special character.')
+                return render_template('createSignUp.html')
+
+            existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+            if existing_user:
+                if existing_user.username == username:
+                    flash('Username already taken. Please choose a different username.')
+                if existing_user.email == email:
+                    flash('Email already registered. Please log in or use a different email.')
+                return render_template('createSignUp.html')
+
             key = Fernet.generate_key()
 
             new_user = User(username=username, firstn=firstn, lastn=lastn, mobile=mobile, email=email, password=hashed_password, Key=key, role="user")
@@ -147,7 +203,7 @@ def login():
             db.session.commit()
 
             session['username'] = user.username
-            if user.username == "admin":
+            if user.role == "admin":
                 session['admin'] = True
                 session['role'] = 'admin'
             elif user.role == "staff":
@@ -167,8 +223,6 @@ def login():
                 flash(f'Too many failed login attempts. Please try again in {lockout_duration} minutes')
             else:
                 flash('Login Unsuccessful. Please check username and password.')
-    else:
-        flash('Login Unsuccessful. Please check username and password')
     db.session.commit()
 
     return render_template('Login.html')
@@ -183,12 +237,18 @@ def logout():
     return response
 
 
-@app.route('/check-session')
-def check_session():
-    if 'username' in session:
-        return 'Session is active.'
-    else:
-        return 'No active session found.'
+@app.route('/grant_admin/<int:user_id>', methods=['GET', 'POST'])
+def grant_admin(user_id):
+    if session.get('role') != 'admin':
+        return "Access Denied. This feature requires admin-level access!", 403
+
+    user = User.query.get_or_404(user_id)
+    if request.method == 'POST':
+        user.role = 'admin'
+        db.session.commit()
+        flash(f'User {user.username} has been granted admin privileges.', 'success')
+        return redirect(url_for('show_staff'))
+    return render_template('grant_admin.html', user=user)
 
 
 @app.route('/account')
@@ -211,6 +271,15 @@ def show_staff():
     return render_template('staff_accounts.html', staff=staff)
 
 
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted successfully.', 'success')
+    return redirect(url_for('show_staff'))
+
+
 @app.route('/customer_accounts', methods=["GET"])
 @limiter.limit("50/hour")
 def show_customer():
@@ -219,6 +288,15 @@ def show_customer():
 
     customer = User.query.filter_by(role='user').all()
     return render_template('customer_accounts.html', customer=customer)
+
+
+@app.route('/delete_customer/<int:user_id>', methods=['POST'])
+def delete_customer(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('Customer deleted successfully.', 'success')
+    return redirect(url_for('show_customer'))
 
 
 @app.route('/account/update', methods=['GET', 'POST'])
@@ -359,38 +437,52 @@ def view_points():
 def create_product():
     create_product_form = CreateProductForm(request.form)
     if request.method == 'POST':
+        if 'photos' not in request.files:
+            flash('No file part', 'error')
+            return redirect(request.url)
 
         file = request.files['photos']
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        photos = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        if file.filename == '':
+            flash('No selected file', 'error')
+            return redirect(request.url)
 
-        new_product = CreateProductForm.product(
-            name=create_product_form.name.data,
-            product=create_product_form.product.data,
-            description=create_product_form.description.data,
-            price=create_product_form.price.data,
-            photos=photos
-        )
+        if file:
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            photos = file_path
 
-        db.session.add(new_product)
-        db.session.commit()
+            new_product = Product(
+                name=create_product_form.name.data,
+                product=create_product_form.product.data,
+                description=create_product_form.description.data,
+                price=create_product_form.price.data,
+                photos=photos
+            )
 
-        return redirect(url_for('retrieve_product'))
+            db.session.add(new_product)
+            db.session.commit()
+
+            flash('Product created successfully!', 'success')
+            return redirect(url_for('retrieve_product'))
+
+        flash('File upload failed', 'error')
+        return redirect(request.url)
     return render_template('createProduct.html', form=create_product_form)
 
 
 @app.route('/retrieveProducts')
 def retrieve_product():
-    products_list = Product.query.all()
-    return render_template('retrieveProduct.html', count=len(products_list), products_list=products_list)
+    products = Product.query.all()
+    return render_template('retrieveProduct.html', products_list=products, count=len(products))
 
 
 @app.route('/updateProduct/<int:id>', methods=['GET', 'POST'])
 def update_product(id):
     # Retrieve product by ID from the database
-    product = CreateProductForm.product.query.get_or_404(id)
+    product = Product.query.get_or_404(id)
     update_product_form = CreateProductForm(obj=product)
+
     if request.method == 'POST' and update_product_form.validate():
         product.name = request.form['name']
         product.product = request.form['product']
@@ -398,31 +490,31 @@ def update_product(id):
         product.price = request.form['price']
 
         # If a new photo is provided, save it and update the product's photo path
-        if 'photos' in request.files and request.files['photos']:
+        if 'photos' in request.files and request.files['photos'].filename:
             photo_filename = secure_filename(request.files['photos'].filename)
-            if photo_filename and allowed_file(photo_filename):
-                request.files['photos'].save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
+            if allowed_file(photo_filename):
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)
+                request.files['photos'].save(file_path)
                 product.photos = photo_filename
 
         db.session.commit()
-        flash('Product updated successfully.')
+        flash('Product updated successfully.', 'success')
         return redirect(url_for('retrieve_product'))
 
     return render_template('updateProduct.html', form=update_product_form, product=product)
 
 
-@app.route('/deleteProduct/<int:id>', methods=['POST'])
+@app.route('/delete_product/<int:id>', methods=['POST'])
 def delete_product(id):
-    product = CreateProductForm.product.query.get_or_404(id)
+    product = Product.query.get_or_404(id)
     db.session.delete(product)
     db.session.commit()
 
-    # Remove the associated photo file
     photo_path = os.path.join(app.config['UPLOAD_FOLDER'], product.photos)
     if os.path.exists(photo_path):
         os.remove(photo_path)
 
-    flash('Product deleted successfully.')
+    flash('Product deleted successfully.', 'success')
     return redirect(url_for('retrieve_product'))
 
 
@@ -820,7 +912,6 @@ def submit_payment():
                         flash("Order not found", "error")
                         return redirect(url_for('home'))
 
-                    # Retrieve the last order ID
                     order_id = list(orders.keys())[-1]
 
                 return redirect(url_for('success_payment'))
@@ -879,11 +970,11 @@ def success_payment():
         db.session.commit()
 
         with shelve.open('order.db', 'c') as order_db:
-            if 'orders' in order_db and order_id in order_db['orders']:
-                del order_db['orders'][order_id]
-            if 'cart' in order_db and order_id in order_db['cart']:
-                del order_db['cart'][order_id]
-        order_db.close()
+            if 'orders' in order_db:
+                order_db['orders'].pop(order_id)
+            if 'cart' in order_db:
+                order_db['cart'].pop(order_id)
+            order_db.close()
         return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
 
 

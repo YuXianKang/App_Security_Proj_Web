@@ -13,8 +13,8 @@
 
 <div class="card-group">
   {% for product in products_list %}
-    <div class="card" style="width: 18rem;">
-      <img src="{{ url_for('serve_image', filename=product.photos, image_id=product.id) }}" alt="{{ product.name }}">
+    <div class="card" style="width: 18rem; margin: 10px;">
+      <img src="{{ url_for('static', filename='uploads/' ~ product.photos) }}" class="card-img-top" alt="{{ product.name }}">
       <div class="card-body">
         <h5 class="card-title font-weight-bold">{{ product.name }}</h5>
         <p class="card-text">{{ product.description }}</p>

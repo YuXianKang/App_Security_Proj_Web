@@ -2,9 +2,6 @@
 
 {% block title %}Feedback{% endblock %}
 
-{% block content %}
-{% from "includes/_formHelper.html" import render_field %}
-
 <style>
     body {
         font-family: 'julius sans one';
@@ -35,6 +32,9 @@
         text-align: center;
     }
 </style>
+
+{% block content %}
+{% from "includes/_formHelper.html" import render_field %}
 
 <h2 class="display-4">Feedback</h2>
 

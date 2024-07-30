@@ -7,12 +7,20 @@
 {% block content %}
 
 <style>
+   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f8f8;
+  }
+
   .about-section {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 40px 20px;
-    box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    padding: 60px 30px;
+    background-color: #fff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
   }
 
   .about-header {
@@ -20,30 +28,28 @@
     margin-bottom: 40px;
   }
 
-  h1,
-  h2 {
+  h1 {
     color: #333;
-    font-size: 28px;
+    font-size: 36px;
     text-transform: uppercase;
+    letter-spacing: 2px;
   }
 
   h2 {
+    color: #007bff;
+    font-size: 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     margin-top: 0;
   }
 
-  h3 {
+  .about {
     color: #666;
-    font-size: 22px;
-  }
-
-  .about{
-     text-align: center;
-     font-size: 21px;
+    font-size: 18px;
   }
 
   p {
-    color: #444;
-    text-align: justify;
+    color: #555;
     line-height: 1.8;
     margin-bottom: 20px;
   }
@@ -51,24 +57,27 @@
   a {
     color: #007bff;
     text-decoration: none;
+    transition: color 0.3s ease;
   }
 
   a:hover {
+    color: #0056b3;
     text-decoration: underline;
   }
 
   .card {
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #f8f8f8;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     margin-bottom: 30px;
-    padding: 20px;
-    transition: transform 0.15s ease-in-out;
+    padding: 30px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
- .card:hover {
+  .card:hover {
     transform: translateY(-5px);
-  }
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+
 </style>
 
 <div class="about-section">
