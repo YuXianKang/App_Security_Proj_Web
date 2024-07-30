@@ -73,6 +73,52 @@ def create_staff_account():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
 
+            # Check for spaces in fields
+            if ' ' in username:
+                flash('Username cannot contain spaces.')
+                return render_template('createStaffSignUp.html')
+            if ' ' in firstn:
+                flash('First name cannot contain spaces.')
+                return render_template('createStaffSignUp.html')
+            if ' ' in lastn:
+                flash('Last name cannot contain spaces.')
+                return render_template('createStaffSignUp.html')
+            if ' ' in mobile:
+                flash('Mobile number cannot contain spaces.')
+                return render_template('createStaffSignUp.html')
+            if ' ' in email:
+                flash('Email cannot contain spaces.')
+                return render_template('createStaffSignUp.html')
+            if ' ' in password:
+                flash('Password cannot contain spaces.')
+                return render_template('createStaffSignUp.html')
+
+            # Password security checks
+            if len(password) < 8:
+                flash('Password must be at least 8 characters long.')
+                return render_template('createStaffSignUp.html')
+            if not re.search(r'[A-Z]', password):
+                flash('Password must contain at least one uppercase letter.')
+                return render_template('createStaffSignUp.html')
+            if not re.search(r'[a-z]', password):
+                flash('Password must contain at least one lowercase letter.')
+                return render_template('createStaffSignUp.html')
+            if not re.search(r'[0-9]', password):
+                flash('Password must contain at least one digit.')
+                return render_template('createStaffSignUp.html')
+            if not re.search(r'[\W_]', password):  # Checks for any non-alphanumeric character
+                flash('Password must contain at least one special character.')
+                return render_template('createStaffSignUp.html')
+
+            # Check for duplicate username or email
+            existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+            if existing_user:
+                if existing_user.username == username:
+                    flash('Username already taken. Please choose a different username.')
+                if existing_user.email == email:
+                    flash('Email already registered. Please use a different email.')
+                return render_template('createStaffSignUp.html')
+
             new_user = User(username=username, firstn=firstn, lastn=lastn, mobile=mobile, email=email, password=hashed_password, role="staff")
             db.session.add(new_user)
             db.session.commit()
@@ -89,10 +135,9 @@ def create_staff_account():
 def signup():
     if request.method == "POST":
         recaptcha_response = request.form.get('g-recaptcha-response')
-        secret_key = '6LdKdRcqAAAAALvlHvSeepujVfzjSvHoHVjQjcgc'
 
         recaptcha_verification = requests.post('https://www.google.com/recaptcha/api/siteverify', data={
-            'secret': secret_key,
+            'secret': config.secret_key,
             'response': recaptcha_response
         })
         result = recaptcha_verification.json()
@@ -177,10 +222,9 @@ def signup():
 def login():
     if request.method == "POST":
         recaptcha_response = request.form.get('g-recaptcha-response')
-        secret_key = '6LdKdRcqAAAAALvlHvSeepujVfzjSvHoHVjQjcgc'
 
         recaptcha_verification = requests.post('https://www.google.com/recaptcha/api/siteverify', data={
-            'secret': secret_key,
+            'secret': config.secret_key,
             'response': recaptcha_response
         })
         result = recaptcha_verification.json()
