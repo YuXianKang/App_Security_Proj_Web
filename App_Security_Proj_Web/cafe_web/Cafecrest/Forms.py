@@ -23,18 +23,18 @@ class collection_type (Form):
 
 
 def validate_name(form, field):
-    if field.data.isalpha() ==0:
+    if field.data.isalpha() == 0:
         raise ValidationError('Name must only contain alphabets')
 
 
 def validate_mobile(form, field):
-    if field.data.isdigit() ==0:
+    if field.data.isdigit() == 0:
         raise ValidationError('Mobile number must only contain numbers')
 
 
 class CreateFeedbackForm(Form):
-    name = StringField('Name', [validators.Length(min=1, max=150) , validators.DataRequired(),validate_name])
-    mobile_no = StringField('Mobile Number', [validators.length(min=8,max=8), validators.DataRequired(),validate_mobile])
+    name = StringField('Name', [validators.Length(min=1, max=150), validators.DataRequired(), validate_name])
+    mobile_no = StringField('Mobile Number', [validators.length(min=8, max=8), validators.DataRequired(), validate_mobile])
     service = StringField('Service', [validators.Length(min=1, max=200), validators.DataRequired()])
     food = StringField('Food', [validators.Length(min=1, max=200), validators.DataRequired()])
-    feedback = StringField('Additional Feedback',[validators.Length(min=1, max=200), validators.DataRequired()])
+    feedback = StringField('Additional Feedback', [validators.Length(min=1, max=200), validators.DataRequired()])

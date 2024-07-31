@@ -76,7 +76,7 @@
 
         const minutes = Math.floor(lockoutTime / 60);
         const seconds = lockoutTime % 60;
-        flashMessageDiv.innerHTML = `Too many failed login attempts. Please try again in ${minutes} minute(s) and ${seconds} second(s).`;
+        flashMessageDiv.innerHTML = Too many failed login attempts. Please try again in ${minutes} minute(s) and ${seconds} second(s).;
         lockoutTime--;
 
         setTimeout(updateLockoutMessage, 1000);

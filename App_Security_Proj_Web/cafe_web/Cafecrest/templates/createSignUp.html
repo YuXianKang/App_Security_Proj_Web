@@ -1,6 +1,9 @@
 {% extends "base.html" %}
+
 {% block title %}Customer Sign Up{% endblock %}
+
 {% block content %}
+
 <style>
   body {
     background-color: #b0926a;
@@ -61,6 +64,7 @@
     color: green;
   }
 </style>
+
 <div class="signup-centered">
   <form method="POST" id="signup">
     <input type="text" name="username" placeholder="Username" required>
@@ -77,6 +81,7 @@
     <button type="submit">Sign Up</button>
   </form>
 </div>
+
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
   document.getElementById('password').addEventListener('input', function() {
@@ -103,8 +108,8 @@
     }
 
     const strengthDisplay = document.getElementById('password-strength');
-    strengthDisplay.textContent = `Password strength: ${strength}`;
-    strengthDisplay.className = `password-strength ${strengthClass}`;
+    strengthDisplay.textContent = Password strength: ${strength};
+    strengthDisplay.className = password-strength ${strengthClass};
   });
 </script>
 

@@ -1,8 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf', 'webp'}
-UPLOAD_FOLDER = 'static'
 
 
 class User(db.Model):
@@ -18,9 +16,6 @@ class User(db.Model):
     login_attempts = db.Column(db.Integer, default=0)
     lockout_time = db.Column(db.DateTime, nullable=True)
 
-
-
-
     def __repr__(self):
         return f"User('{self.username}', '{self.firstn}', '{self.lastn}', '{self.mobile}' ,'{self.email}', '{self.role}', '{self.login_attempts}', '{self.lockout_time}')"
 
@@ -29,10 +24,9 @@ class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     card_number = db.Column(db.String(130), nullable=False)
     expiration_date = db.Column(db.String(10), nullable=False)
-    cvv = db.Column(db.String(3), nullable=False)
+    cvv = db.Column(db.String(130), nullable=False)
     card_name = db.Column(db.String(50), nullable=False)
     username = db.Column(db.String(130), db.ForeignKey('user.username'), nullable=False)
-
 
     def __repr__(self):
         return f"<Payment(card_number={self.card_number}, expiration_date={self.expiration_date}, cvv={self.cvv}, card_name={self.card_name})>"
@@ -47,7 +41,6 @@ class Product(db.Model):
     price = db.Column(db.Integer, nullable=False)
     photos = db.Column(db.Text, nullable=False)
 
-
     def __init__(self, name, product, description, price, photos):
         self.name = name
         self.product = product
@@ -55,35 +48,42 @@ class Product(db.Model):
         self.photos = photos
         self.price = price
 
-
     def set_product_id(self, value):
         self.id = value
+
     def get_product_id(self):
         return self.id
+
     def get_name(self):
         return self.name
+
     def set_name(self, value):
         self.name = value
+
     def get_price(self):
         return self.price
+
     def set_price(self, value):
         self.price = value
+
     def get_product(self):
         return self.product
+
     def set_product(self, value):
         self.product = value
+
     def get_description(self):
         return self.description
+
     def set_description(self, value):
         self.description = value
+
     def get_photos(self):
         return self.photos
+
     def set_photos(self, photos):
         self.photos = photos.filename
         self.save()
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 class Feed_back(db.Model):
@@ -103,10 +103,8 @@ class Order(db.Model):
     items = db.Column(db.String(500), nullable=False)
     total = db.Column(db.Float, nullable=False)
 
-
     def __repr__(self):
         return f"Order('{self.items}')"
-
 
 
 class UserPoints(db.Model):
@@ -115,5 +113,4 @@ class UserPoints(db.Model):
     points = db.Column(db.Integer, default=0)
 
     def __repr__(self):
-
         return f"<UserPoints {self.username} - {self.points}>"
