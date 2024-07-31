@@ -391,31 +391,6 @@ def view_points():
         return redirect(url_for('home'))
 
 
-# @app.route('/createProduct', methods=['GET', 'POST'])
-# def create_product():
-#     create_product_form = CreateProductForm(request.form)
-#     if request.method == 'POST':
-#
-#         file = request.files['photos']
-#         filename = secure_filename(file.filename)
-#         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#         photos = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#
-#         new_product = CreateProductForm.product(
-#             name=create_product_form.name.data,
-#             product=create_product_form.product.data,
-#             description=create_product_form.description.data,
-#             price=create_product_form.price.data,
-#             photos=photos
-#         )
-#
-#         db.session.add(new_product)
-#         db.session.commit()
-#
-#         return redirect(url_for('retrieve_product'))
-#     return render_template('createProduct.html', form=create_product_form)
-#
-
 @app.route('/createProduct', methods=['GET', 'POST'])
 def create_product():
     create_product_form = CreateProductForm(request.form)
