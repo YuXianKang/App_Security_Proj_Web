@@ -1,7 +1,5 @@
 {% extends "base.html" %}
-
 {% block title %}CafeCrest - Login{% endblock %}
-
 {% block content %}
 <style>
     body {
@@ -13,7 +11,6 @@
         align-items: center;
         height: 100vh;
     }
-
     #login {
         display: flex;
         flex-direction: column;
@@ -23,26 +20,27 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         width: 100%;
     }
-
-   .div {
+    .div {
         width: 100%;
         margin: auto;
     }
-
     h2 {
         text-align: center;
     }
-
-   .login-centered {
+    .login-centered {
         padding-top: 3rem;
         width: 40%;
         margin: auto;
     }
-
     input {
         height: 2rem;
         margin-top: 1rem;
         margin-bottom: 1rem;
+    }
+    .flash-message {
+        color: red;
+        text-align: center;
+        margin-top: 1rem;
     }
 </style>
 
@@ -50,18 +48,43 @@
     <form method="POST" id="login">
         <input type="text" name="username" placeholder="Username" required>
         <input type="password" name="password" placeholder="Password" required>
-        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
         <div class="g-recaptcha" data-sitekey="6LdKdRcqAAAAAH8hbSx1-fPVrtAV7r5gfnPWlT9g"></div>
         <button type="submit">Login</button>
     </form>
 </div>
 
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for message in messages %}
-            <div>{{ message }}</div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+<div class="flash-message" id="flash-message">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div>{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+{% if lockout_time %}
+<script>
+    let lockoutTime = {{ lockout_time }};
+    const flashMessageDiv = document.getElementById('flash-message');
+
+    function updateLockoutMessage() {
+        if (lockoutTime <= 0) {
+            flashMessageDiv.innerHTML = 'You can try logging in again now.';
+            return;
+        }
+
+        const minutes = Math.floor(lockoutTime / 60);
+        const seconds = lockoutTime % 60;
+        flashMessageDiv.innerHTML = `Too many failed login attempts. Please try again in ${minutes} minute(s) and ${seconds} second(s).`;
+        lockoutTime--;
+
+        setTimeout(updateLockoutMessage, 1000);
+    }
+
+    updateLockoutMessage();
+</script>
+{% endif %}
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 {% endblock %}

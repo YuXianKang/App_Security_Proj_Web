@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block title %}Customer Sign Up{% endblock %}
-
 {% block content %}
 <style>
   body {
@@ -12,13 +11,11 @@
     align-items: center;
     height: 100vh;
   }
-
   input {
     height: 2rem;
     margin-top: 1rem;
     margin-bottom: 1rem;
   }
-
   #signup {
     display: flex;
     flex-direction: column;
@@ -28,24 +25,42 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
   }
-
  .div {
     width: 30%;
     height: 40%;
     margin: auto;
   }
-
   h2 {
     text-align: center;
   }
-
  .signup-centered {
     padding-top: 3rem;
     width: 40%;
     margin: auto;
   }
+  .flash-message {
+    color: red;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  .password-hint {
+    font-size: 0.9rem;
+    color: gray;
+  }
+  .password-strength {
+    margin-top: 1rem;
+    font-size: 1rem;
+  }
+  .strength-weak {
+    color: red;
+  }
+  .strength-medium {
+    color: orange;
+  }
+  .strength-strong {
+    color: green;
+  }
 </style>
-
 <div class="signup-centered">
   <form method="POST" id="signup">
     <input type="text" name="username" placeholder="Username" required>
@@ -53,17 +68,50 @@
     <input type="text" name="lastn" placeholder="Last Name" required>
     <input type="number" name="mobile" placeholder="Mobile Number" required>
     <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="password" placeholder="Password" required>
+    <input type="password" name="password" id="password" placeholder="Password" required>
+    <div class="password-hint">
+      Password must be at least 8 characters, contain an uppercase letter, a lowercase letter, a number, and a special character.
+    </div>
+    <div class="password-strength" id="password-strength"></div>
     <div class="g-recaptcha" data-sitekey="6LdKdRcqAAAAAH8hbSx1-fPVrtAV7r5gfnPWlT9g"></div>
     <button type="submit">Sign Up</button>
   </form>
 </div>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+  document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    let strength = 'Weak';
+    let strengthClass = 'strength-weak';
+
+    // Check the length of the password
+    if (password.length >= 8) {
+      // Check for the presence of required characters
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumbers = /[0-9]/.test(password);
+      const hasSpecialChars = /[\W_]/.test(password);
+
+      // Determine strength based on criteria
+      if (hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars) {
+        strength = 'Strong';
+        strengthClass = 'strength-strong';
+      } else if ((hasUpperCase || hasLowerCase) && hasNumbers && hasSpecialChars) {
+        strength = 'Medium';
+        strengthClass = 'strength-medium';
+      }
+    }
+
+    const strengthDisplay = document.getElementById('password-strength');
+    strengthDisplay.textContent = `Password strength: ${strength}`;
+    strengthDisplay.className = `password-strength ${strengthClass}`;
+  });
+</script>
 
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     {% for message in messages %}
-      <div>{{ message }}</div>
+      <div class="flash-message">{{ message }}</div>
     {% endfor %}
   {% endif %}
 {% endwith %}

@@ -31,7 +31,7 @@
 
  .div {
     width: 30%;
-    height: 40%; /* Fixed typo from 'length' to 'height' */
+    height: 40%;
     margin: auto;
   }
 
@@ -44,6 +44,29 @@
     width: 40%;
     margin: auto;
   }
+
+  .flash-message {
+    color: red;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  .password-hint {
+    font-size: 0.9rem;
+    color: gray;
+  }
+  .password-strength {
+    margin-top: 1rem;
+    font-size: 1rem;
+  }
+  .strength-weak {
+    color: red;
+  }
+  .strength-medium {
+    color: orange;
+  }
+  .strength-strong {
+    color: green;
+  }
 </style>
 
 <div class="signup-centered">
@@ -53,15 +76,46 @@
     <input type="text" name="lastn" placeholder="Last Name" required>
     <input type="number" name="mobile" placeholder="Mobile Number" required>
     <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="password" placeholder="Password" required>
+    <input type="password" name="password" id="password" placeholder="Password" required>
+    <div class="password-hint">
+      Password must be at least 8 characters, contain an uppercase letter, a lowercase letter, a number, and a special character.
+    </div>
+    <div class="password-strength" id="password-strength"></div>
     <button type="submit">Create Staff Account</button>
   </form>
 </div>
 
+<script>
+  document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    let strength = 'Weak';
+    let strengthClass = 'strength-weak';
+
+    if (password.length >= 8) {
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasLowerCase = /[a-z]/.test(password);
+      const hasNumbers = /[0-9]/.test(password);
+      const hasSpecialChars = /[\W_]/.test(password);
+
+      if (hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars) {
+        strength = 'Strong';
+        strengthClass = 'strength-strong';
+      } else if ((hasUpperCase || hasLowerCase) && hasNumbers && hasSpecialChars) {
+        strength = 'Medium';
+        strengthClass = 'strength-medium';
+      }
+    }
+
+    const strengthDisplay = document.getElementById('password-strength');
+    strengthDisplay.textContent = `Password strength: ${strength}`;
+    strengthDisplay.className = `password-strength ${strengthClass}`;
+  });
+</script>
+
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     {% for message in messages %}
-      <div>{{ message }}</div>
+      <div class="flash-message">{{ message }}</div>
     {% endfor %}
   {% endif %}
 {% endwith %}
