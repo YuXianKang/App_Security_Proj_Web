@@ -1,16 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
     body {
-        font-family: Arial, sans-serif;
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(to bottom right, #f2f2f2, #e6e6e6);
     }
 
-  .container {
+    .container {
         max-width: 800px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 40px;
     }
 
     h1 {
@@ -21,77 +25,86 @@
         color: #666;
     }
 
-  .table {
+    .table {
         width: 100%;
         border-collapse: collapse;
     }
 
-  .table th,.table td {
+    .table th, .table td {
         border: 1px solid #ddd;
         padding: 8px;
         text-align: left;
     }
 
-  .table th {
+    .table th {
         background-color: #f2f2f2;
     }
 
-  .hyperlink {
+    .hyperlink {
         color: #06F;
         text-decoration: none;
     }
 
-  .hyperlink:hover {
+    .hyperlink:hover {
         text-decoration: underline;
     }
 
-    /* Additional styles for enhancements */
-  .card {
-        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-        transition: 0.3s;
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         border-radius: 5px;
+        margin-bottom: 30px;
     }
 
-  .card:hover {
-        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    .card-body {
+        padding: 30px;
     }
 
-  .btn-primary {
+    .btn-primary {
         background-color: #007bff;
         border: none;
+        border-radius: 30px;
         color: white;
-        padding: 10px 24px;
+        padding: 12px 30px;
         text-align: center;
         text-decoration: none;
         display: inline-block;
         font-size: 16px;
-        margin: 4px 2px;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
         cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
     }
 </style>
 
 <div class="container">
     <h1 class="text-center mb-4"><i class="fas fa-trophy"></i> Your Points and Category</h1>
     <p class="welcome-message mb-3">
-    Welcome, <span class="font-weight-bold">{{ username }}</span> 🎉
+        Welcome, <span class="font-weight-bold">{{ username }} 🎉</span>
     </p>
 
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Membership Tier</h5>
-                    <ul class="list-unstyled">
-                        {% if category == "Platinum" %}
+                <div class="card-body d-flex align-items-center">
+                    <i class="fas fa-medal fa-3x mr-4 text-primary"></i>
+                    <div>
+                        <h5 class="card-title">Membership Tier</h5>
+                        <ul class="list-unstyled">
+                            {% if category == "Platinum" %}
                             <li><i class="fas fa-medal"></i> Platinum Member</li>
-                        {% elif category == "Gold" %}
+                            {% elif category == "Gold" %}
                             <li><i class="fas fa-star"></i> Gold Member</li>
-                        {% elif category == "Silver" %}
+                            {% elif category == "Silver" %}
                             <li><i class="fas fa-star-half-alt"></i> Silver Member</li>
-                        {% elif category == "Bronze" %}
+                            {% elif category == "Bronze" %}
                             <li><i class="fas fa-star"></i> Bronze Member</li>
-                        {% endif %}
-                    </ul>
+                            {% endif %}
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,9 +137,15 @@
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Progress Towards Next Level</h5>
-            <p>Current Points: <span class="font-weight-bold">{{ user_points_value }}</span></p>
-            <p>Threshold for Next Level: <span class="font-weight-bold">{{ next_level_threshold }}</span></p>
-            <p>Points Needed: <span class="font-weight-bold">{{ next_level_threshold - user_points_value }}</span></p>
+            <p>Current Points:
+                <span class="font-weight-bold">{{ user_points_value }}</span>
+            </p>
+            <p>Threshold for Next Level:
+                <span class="font-weight-bold">{{ next_level_threshold }}</span>
+            </p>
+            <p>Points Needed:
+                <span class="font-weight-bold">{{ next_level_threshold - user_points_value }}</span>
+            </p>
         </div>
     </div>
 
