@@ -22,6 +22,8 @@ import requests
 from products import food, coffee, non_coffee, all_products
 from Encryption_Payment import encrypt_data, decrypt_data
 from Order_Calculation import calculate_subtotal, calculate_sales_tax, calculate_grand_total, calculate_delivery_amount
+import logging
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -46,14 +48,25 @@ db.init_app(app)
 
 new_product = None
 
+if not app.debug:
+    file_handler = RotatingFileHandler('app.log', maxBytes=10240, backupCount=10)
+    file_handler.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+
 
 @app.route('/')
 def home():
+    app.logger.info('Home Page Accessed!')
     return render_template('home.html')
 
 
 @app.route('/about_us')
 def about_us():
+    app.logger.info('About Us Page Accessed!')
     return render_template('about_us.html')
 
 
@@ -61,6 +74,7 @@ def about_us():
 @limiter.limit("10/hour")
 def create_staff_account():
     if session.get('role') != 'admin':
+        app.logger.warning('Access Denied for non-admin user trying to access staff account creation')
         return "Access Denied. This feature requires admin-level access!", 403
 
     if request.method == "POST":
@@ -125,6 +139,7 @@ def create_staff_account():
             return redirect(url_for('home'))
         except IntegrityError:
             db.session.rollback()
+            app.logger.error(f'Failed to sign up user. Email already registered: {email}')
             flash('Email already registered. Please log in or use a different email.')
             return redirect(url_for('login'))
     return render_template('createStaffSignUp.html')
@@ -143,6 +158,7 @@ def signup():
         result = recaptcha_verification.json()
 
         if not result.get('success'):
+            app.logger.warning('reCAPTCHA verification failed during login')
             flash('reCAPTCHA verification failed. Please try again.')
             return render_template('createSignUp.html')
 
@@ -188,18 +204,15 @@ def signup():
             if not re.search(r'[0-9]', password):
                 flash('Password must contain at least one digit.')
                 return render_template('createSignUp.html')
-            if not re.search(r'[\W_]', password):  # Checks for any non-alphanumeric character
+            if not re.search(r'[\W_]', password):
                 flash('Password must contain at least one special character.')
                 return render_template('createSignUp.html')
 
             # Check for duplicate username or email
-            existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+            existing_user = User.query.filter(User.username == username).first()
             if existing_user:
                 if existing_user.username == username:
                     flash('Username already taken. Please choose a different username.')
-                if existing_user.email == email:
-                    flash('Email already registered. Please log in or use a different email.')
-                return render_template('createSignUp.html')
 
             key = Fernet.generate_key()
 
@@ -207,11 +220,13 @@ def signup():
 
             db.session.add(new_user)
             db.session.commit()
+            app.logger.info(f'New User Signed Up: {username}')
 
             return redirect(url_for('home'))
 
         except IntegrityError:
             db.session.rollback()
+            app.logger.error(f'Failed to sign up user. Email already registered: {email}')
             flash('Email already registered. Please log in or use a different email.')
             return redirect(url_for('login'))
 
@@ -230,6 +245,7 @@ def login():
         result = recaptcha_verification.json()
 
         if not result.get('success'):
+            app.logger.warning('reCAPTCHA verification failed during login')
             flash('reCAPTCHA verification failed. Please try again.')
             return render_template('Login.html')
 
@@ -240,6 +256,7 @@ def login():
         if user:
             if user.lockout_time and datetime.now() < user.lockout_time:
                 remaining_time = (user.lockout_time - datetime.now()).seconds // 60
+                app.logger.warning(f'User {username} attempted login while locked out. Remaining time: {remaining_time} minutes')
                 flash(f'Too many failed login attempts. Please try again in {remaining_time} minutes.')
                 return render_template('Login.html')
 
@@ -266,18 +283,21 @@ def login():
             user.login_attempts += 1
             if user.login_attempts >= max_attempts:
                 user.lockout_time = datetime.now() + timedelta(minutes=lockout_duration)
+                app.logger.warning(
+                    f'User {username} exceeded login attempts. Locked out until {user.lockout_time}.')
                 flash(f'Too many failed login attempts. Please try again in {lockout_duration} minutes')
             else:
+                app.logger.info(f'Failed Login attempt for User: {username}')
                 flash('Login Unsuccessful. Please check username and password.')
     db.session.commit()
-
+    app.logger.info('Login Page Accessed!')
     return render_template('Login.html')
 
 
 @app.route('/logout')
 def logout():
     session.clear()
-
+    app.logger.info('User logged out')
     response = redirect(url_for('home'))
     response.set_cookie('session', '', max_age=0, httponly=True, secure=True)
     return response
@@ -286,6 +306,7 @@ def logout():
 @app.route('/grant_admin/<int:user_id>', methods=['GET', 'POST'])
 def grant_admin(user_id):
     if session.get('role') != 'admin':
+        app.logger.warning('Access Denied for non-admin user trying to access staff account creation')
         return "Access Denied. This feature requires admin-level access!", 403
 
     user = User.query.get_or_404(user_id)
@@ -302,18 +323,23 @@ def account():
     user = User.query.filter_by(username=session['username']).first()
 
     if user:
+        app.logger.info('Account page accessed by user %s', session['username'])
         return render_template('account.html', user=user)
     else:
+        app.logger.info('Account page accessed without a valid session')
         return redirect(url_for('home'))
 
 
-@app.route('/staff_accounts', methods=["GET"])
-# @limiter.limit("50/hour")
+@app.route('/staff_accounts', methods=['GET'])
+@limiter.limit("50/hour")
 def show_staff():
     if session.get('role') != 'admin':
+        app.logger.warning('Unauthorized access attempt to staff accounts page by user %s',
+                           session.get('username', 'unknown'))
         return "Access Denied. This feature requires admin-level access!", 403
 
     staff = User.query.filter_by(role='staff').all()
+    app.logger.info('Staff accounts page accessed by admin %s', session['username'])
     return render_template('staff_accounts.html', staff=staff)
 
 
@@ -322,23 +348,39 @@ def delete_user(user_id):
     user = User.query.get_or_404(user_id)
     db.session.delete(user)
     db.session.commit()
+    app.logger.info('A Staff account deleted by admin')
     flash('User deleted successfully.', 'success')
     return redirect(url_for('show_staff'))
 
 
-@app.route('/customer_accounts', methods=["GET"])
-@limiter.limit("50/hour")
+@app.route('/customer_accounts', methods=['GET'])
 def show_customer():
     if session.get('role') != 'admin':
+        app.logger.warning('Unauthorized access attempt to customer accounts page by user %s',
+                           session.get('username', 'unknown'))
         return "Access Denied. This feature requires admin-level access!", 403
 
     customer = User.query.filter_by(role='user').all()
+    app.logger.info('Customer accounts page accessed by admin %s', session['username'])
     return render_template('customer_accounts.html', customer=customer)
 
 
 @app.route('/delete_customer/<int:user_id>', methods=['POST'])
 def delete_customer(user_id):
     user = User.query.get_or_404(user_id)
+
+    payment_details = Payment.query.filter_by(username=user.username).all()
+    for payment_detail in payment_details:
+        db.session.delete(payment_detail)
+
+    orders = Order.query.filter_by(username=user.username).all()
+    for order in orders:
+        db.session.delete(order)
+
+    user_points = UserPoints.query.filter_by(username=user.username).first()
+    if user_points:
+        db.session.delete(user_points)
+
     db.session.delete(user)
     db.session.commit()
     flash('Customer deleted successfully.', 'success')
@@ -365,6 +407,8 @@ def update_account():
         ).first()
 
         if existing_user:
+            app.logger.warning('Attempt to update account with existing username or email by user %s',
+                               session['username'])
             flash('Username or email already exists.', 'error')
             return redirect(url_for('update_account'))
 
@@ -378,6 +422,7 @@ def update_account():
         session['username'] = new_username
 
         db.session.commit()
+        app.logger.info('Account updated successfully for user %s', session['username'])
         flash('Account successfully updated.', 'success')
         return redirect(url_for('account'))
 
@@ -411,8 +456,10 @@ def delete_account():
 
         session.pop('username', None)
         session.pop('logged_in', None)
+        app.logger.info('Account deleted for user %s', session.get('username', 'unknown'))
         flash('Your account has been deleted.', 'success')
     else:
+        app.logger.warning('Attempt to delete non-existent account by user %s', session.get('username', 'unknown'))
         flash('User not found.', 'danger')
 
     return redirect(url_for('home'))
@@ -421,6 +468,7 @@ def delete_account():
 @app.route('/customerPortal/')
 def customer_portal():
     if 'username' not in session:
+        app.logger.warning('Unauthorized access attempt to customer portal')
         flash('You must be logged in to view your account portal', 'danger')
         return redirect(url_for('login'))
 
@@ -444,6 +492,7 @@ def customer_portal():
         else:
             user_category = "Bronze"
 
+        app.logger.info('Customer portal accessed by user %s', session['username'])
         return render_template('CustomerPortal.html', user=user, user_orders_count=user_orders_count, user_points_value=user_points_value, user_category=user_category)
     else:
         return redirect(url_for('home'))
@@ -575,6 +624,7 @@ def serve_image(filename):
 @limiter.limit("10/hour")
 def create_payment():
     if 'username' not in session:
+        app.logger.warning('User tried to add payment details without being logged in.')
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
 
@@ -591,6 +641,7 @@ def create_payment():
             db.session.commit()
 
             flash('Payment details added successfully.', 'success')
+            app.logger.info(f'Payment details added for user: {session["username"]}')
             return redirect(url_for('retrieve_payment'))
         return render_template('payment_details.html', form=form)
 
@@ -599,6 +650,7 @@ def create_payment():
 @limiter.limit("10/hour")
 def retrieve_payment():
     if 'username' not in session:
+        app.logger.warning('User tried to view payment details without being logged in.')
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
     payments = Payment.query.filter_by(username=session['username']).all()
@@ -620,6 +672,7 @@ def retrieve_payment():
             'cvv': decrypted_cvv,
             'card_name': payment.card_name})
 
+    app.logger.info(f'Payment details retrieved for user: {session["username"]}')
     return render_template('view_payment_details.html', count=len(payment_details_list), payment_details_list=payment_details_list)
 
 
@@ -650,6 +703,12 @@ def update_payment(id):
 @limiter.limit("5/hour")
 def delete_payment(id):
     payment = Payment.query.get(id)
+
+    if not payment:
+        flash("Payment not found", "error")
+        app.logger.error(f'Attempt to delete non-existent payment with ID {id} by user: {session["username"]}')
+        return redirect(url_for('retrieve_payment'))
+
     db.session.delete(payment)
     db.session.commit()
     flash("Payment details deleted successfully", "success")
@@ -679,8 +738,11 @@ def order_collection():
             cart[order_id] = []
             db['cart'] = cart
 
+        app.logger.info('Order collection started for order_id: %s by user: %s', order_id,
+                        session.get('username', 'unknown'))
         return redirect(url_for('show_products'))
 
+    app.logger.info('Order collection page accessed by user: %s', session.get('username', 'unknown'))
     return render_template('order_collection.html', form=collection_Type)
 
 
@@ -691,6 +753,7 @@ def show_products():
             orders = order_db.get('orders', {})
 
             if not orders:
+                app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
                 return render_template('error.html', error_message="Order not found")
 
             order_id = list(orders.keys())[-1]  # Assuming you want the latest order, adjust as needed
@@ -698,6 +761,7 @@ def show_products():
             cart = order_db.get('cart', {})
             order_cart = cart.get(order_id, [])
 
+        app.logger.info('Products page accessed by user: %s for order_id: %s', session.get('username', 'unknown'))
         return render_template('products.html', food=food, coffee=coffee, non_coffee=non_coffee, cart=order_cart)
 
     except Exception as e:
@@ -709,6 +773,8 @@ def add_to_cart(product_id):
     product = all_products.get(product_id)
 
     if not product:
+        app.logger.warning('Product not found (product_id: %s) for user: %s', product_id,
+                           session.get('username', 'unknown'))
         flash("Product not found", "error")
         return redirect(url_for('show_products'))
 
@@ -716,6 +782,7 @@ def add_to_cart(product_id):
     orders = order_db.get('orders', {})
 
     if not orders:
+        app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
         flash("Order not found", "error")
         order_db.close()
         return redirect(url_for('home'))
@@ -751,6 +818,7 @@ def add_to_cart(product_id):
 
         flash("Product added to cart successfully", "success")
         return redirect(url_for('show_products'))
+
     except:
         flash("An error occurred while adding the product to your cart. Please try again later.", "error")
         return redirect(url_for('home'))
@@ -760,10 +828,13 @@ def add_to_cart(product_id):
 @limiter.limit("10/hour")
 def view_cart():
     if 'username' not in session:
+        app.logger.warning('Unauthorized access attempt to view cart')
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
 
     if 'started_order_process' not in session:
+        app.logger.warning('Attempt to view cart without starting order process by user: %s',
+                           session.get('username', 'unknown'))
         flash("You must start the order process from the order-collection page.", "error")
         return redirect(url_for('order_collection'))
 
@@ -801,6 +872,7 @@ def update_cart_item(product_id):
         orders = order_db.get('orders', {})
 
         if not orders:
+            app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
             flash("Order not found", "error")
             order_db.close()
             return redirect(url_for('home'))
@@ -809,6 +881,7 @@ def update_cart_item(product_id):
         order_db.close()
 
         if not order_id:
+            app.logger.warning('Order ID not found for user: %s', session.get('username', 'unknown'))
             flash("Order not found", "error")
             return redirect(url_for('home'))
 
@@ -1016,12 +1089,12 @@ def success_payment():
             db.session.add(new_points_record)
         db.session.commit()
 
-        with shelve.open('order.db', 'c') as order_db:
+        with shelve.open('order.db', 'c', writeback=True) as order_db:
             if 'orders' in order_db:
                 order_db['orders'].pop(order_id)
             if 'cart' in order_db:
                 order_db['cart'].pop(order_id)
-            order_db.close()
+
         return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
 
 
