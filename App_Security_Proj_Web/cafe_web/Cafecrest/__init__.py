@@ -22,6 +22,8 @@ import requests
 from products import food, coffee, non_coffee, all_products
 from Encryption_Payment import encrypt_data, decrypt_data
 from Order_Calculation import calculate_subtotal, calculate_sales_tax, calculate_grand_total, calculate_delivery_amount
+import logging
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -46,14 +48,25 @@ db.init_app(app)
 
 new_product = None
 
+if not app.debug:
+    file_handler = RotatingFileHandler('app.log', maxBytes=10240, backupCount=10)
+    file_handler.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+
 
 @app.route('/')
 def home():
+    app.logger.info('Home Page Accessed!')
     return render_template('home.html')
 
 
 @app.route('/about_us')
 def about_us():
+    app.logger.info('About Us Page Accessed!')
     return render_template('about_us.html')
 
 
@@ -61,6 +74,7 @@ def about_us():
 @limiter.limit("10/hour")
 def create_staff_account():
     if session.get('role') != 'admin':
+        app.logger.warning('Access Denied for non-admin user trying to access staff account creation')
         return "Access Denied. This feature requires admin-level access!", 403
 
     if request.method == "POST":
@@ -125,6 +139,7 @@ def create_staff_account():
             return redirect(url_for('home'))
         except IntegrityError:
             db.session.rollback()
+            app.logger.error(f'Failed to sign up user. Email already registered: {email}')
             flash('Email already registered. Please log in or use a different email.')
             return redirect(url_for('login'))
     return render_template('createStaffSignUp.html')
@@ -143,6 +158,7 @@ def signup():
         result = recaptcha_verification.json()
 
         if not result.get('success'):
+            app.logger.warning('reCAPTCHA verification failed during login')
             flash('reCAPTCHA verification failed. Please try again.')
             return render_template('createSignUp.html')
 
@@ -188,18 +204,15 @@ def signup():
             if not re.search(r'[0-9]', password):
                 flash('Password must contain at least one digit.')
                 return render_template('createSignUp.html')
-            if not re.search(r'[\W_]', password):  # Checks for any non-alphanumeric character
+            if not re.search(r'[\W_]', password):
                 flash('Password must contain at least one special character.')
                 return render_template('createSignUp.html')
 
             # Check for duplicate username or email
-            existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
+            existing_user = User.query.filter(User.username == username).first()
             if existing_user:
                 if existing_user.username == username:
                     flash('Username already taken. Please choose a different username.')
-                if existing_user.email == email:
-                    flash('Email already registered. Please log in or use a different email.')
-                return render_template('createSignUp.html')
 
             key = Fernet.generate_key()
 
@@ -207,11 +220,13 @@ def signup():
 
             db.session.add(new_user)
             db.session.commit()
+            app.logger.info(f'New User Signed Up: {username}')
 
             return redirect(url_for('home'))
 
         except IntegrityError:
             db.session.rollback()
+            app.logger.error(f'Failed to sign up user. Email already registered: {email}')
             flash('Email already registered. Please log in or use a different email.')
             return redirect(url_for('login'))
 
@@ -230,6 +245,7 @@ def login():
         result = recaptcha_verification.json()
 
         if not result.get('success'):
+            app.logger.warning('reCAPTCHA verification failed during login')
             flash('reCAPTCHA verification failed. Please try again.')
             return render_template('Login.html')
 
@@ -240,6 +256,7 @@ def login():
         if user:
             if user.lockout_time and datetime.now() < user.lockout_time:
                 remaining_time = (user.lockout_time - datetime.now()).seconds // 60
+                app.logger.warning(f'User {username} attempted login while locked out. Remaining time: {remaining_time} minutes')
                 flash(f'Too many failed login attempts. Please try again in {remaining_time} minutes.')
                 return render_template('Login.html')
 
@@ -266,18 +283,21 @@ def login():
             user.login_attempts += 1
             if user.login_attempts >= max_attempts:
                 user.lockout_time = datetime.now() + timedelta(minutes=lockout_duration)
+                app.logger.warning(
+                    f'User {username} exceeded login attempts. Locked out until {user.lockout_time}.')
                 flash(f'Too many failed login attempts. Please try again in {lockout_duration} minutes')
             else:
+                app.logger.info(f'Failed Login attempt for User: {username}')
                 flash('Login Unsuccessful. Please check username and password.')
     db.session.commit()
-
+    app.logger.info('Login Page Accessed!')
     return render_template('Login.html')
 
 
 @app.route('/logout')
 def logout():
     session.clear()
-
+    app.logger.info('User logged out')
     response = redirect(url_for('home'))
     response.set_cookie('session', '', max_age=0, httponly=True, secure=True)
     return response
@@ -286,6 +306,7 @@ def logout():
 @app.route('/grant_admin/<int:user_id>', methods=['GET', 'POST'])
 def grant_admin(user_id):
     if session.get('role') != 'admin':
+        app.logger.warning('Access Denied for non-admin user trying to access staff account creation')
         return "Access Denied. This feature requires admin-level access!", 403
 
     user = User.query.get_or_404(user_id)
@@ -307,8 +328,8 @@ def account():
         return redirect(url_for('home'))
 
 
-@app.route('/staff_accounts', methods=["GET"])
-# @limiter.limit("50/hour")
+@app.route('/staff_accounts', methods=['GET'])
+@limiter.limit("50/hour")
 def show_staff():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
@@ -322,12 +343,12 @@ def delete_user(user_id):
     user = User.query.get_or_404(user_id)
     db.session.delete(user)
     db.session.commit()
+    app.logger.info('A Staff account deleted by admin')
     flash('User deleted successfully.', 'success')
     return redirect(url_for('show_staff'))
 
 
-@app.route('/customer_accounts', methods=["GET"])
-@limiter.limit("50/hour")
+@app.route('/customer_accounts', methods=['GET'])
 def show_customer():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
@@ -339,6 +360,19 @@ def show_customer():
 @app.route('/delete_customer/<int:user_id>', methods=['POST'])
 def delete_customer(user_id):
     user = User.query.get_or_404(user_id)
+
+    payment_details = Payment.query.filter_by(username=user.username).all()
+    for payment_detail in payment_details:
+        db.session.delete(payment_detail)
+
+    orders = Order.query.filter_by(username=user.username).all()
+    for order in orders:
+        db.session.delete(order)
+
+    user_points = UserPoints.query.filter_by(username=user.username).first()
+    if user_points:
+        db.session.delete(user_points)
+
     db.session.delete(user)
     db.session.commit()
     flash('Customer deleted successfully.', 'success')
@@ -1016,12 +1050,12 @@ def success_payment():
             db.session.add(new_points_record)
         db.session.commit()
 
-        with shelve.open('order.db', 'c') as order_db:
+        with shelve.open('order.db', 'c', writeback=True) as order_db:
             if 'orders' in order_db:
                 order_db['orders'].pop(order_id)
             if 'cart' in order_db:
                 order_db['cart'].pop(order_id)
-            order_db.close()
+
         return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
 
 

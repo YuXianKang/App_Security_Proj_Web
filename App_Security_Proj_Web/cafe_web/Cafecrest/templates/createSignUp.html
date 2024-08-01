@@ -5,20 +5,12 @@
 {% block content %}
 
 <style>
-  body {
-    background-color: #b0926a;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
   input {
     height: 2rem;
     margin-top: 1rem;
     margin-bottom: 1rem;
   }
+
   #signup {
     display: flex;
     flex-direction: column;
@@ -28,38 +20,47 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
   }
- .div {
+
+  .div {
     width: 30%;
     height: 40%;
     margin: auto;
   }
+
   h2 {
     text-align: center;
   }
- .signup-centered {
+
+  .signup-centered {
     padding-top: 3rem;
     width: 40%;
     margin: auto;
   }
+
   .flash-message {
     color: red;
     text-align: center;
     margin-top: 1rem;
   }
+
   .password-hint {
     font-size: 0.9rem;
     color: gray;
   }
+
   .password-strength {
     margin-top: 1rem;
     font-size: 1rem;
   }
+
   .strength-weak {
     color: red;
   }
+
   .strength-medium {
     color: orange;
   }
+
   .strength-strong {
     color: green;
   }
@@ -70,7 +71,7 @@
     <input type="text" name="username" placeholder="Username" required>
     <input type="text" name="firstn" placeholder="First Name" required>
     <input type="text" name="lastn" placeholder="Last Name" required>
-    <input type="number" name="mobile" placeholder="Mobile Number" required>
+    <input type="tel" name="mobile" placeholder="Mobile Number" pattern="[89]\d{7}" required>
     <input type="email" name="email" placeholder="Email" required>
     <input type="password" name="password" id="password" placeholder="Password" required>
     <div class="password-hint">
