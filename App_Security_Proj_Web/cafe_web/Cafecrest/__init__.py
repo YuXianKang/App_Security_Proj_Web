@@ -146,7 +146,7 @@ def create_staff_account():
 
 
 @app.route("/createSignUp", methods=["GET", "POST"])
-@limiter.limit("10/hour")
+@limiter.limit("30/hour")
 def signup():
     if request.method == "POST":
         recaptcha_response = request.form.get('g-recaptcha-response')
@@ -234,6 +234,7 @@ def signup():
 
 
 @app.route("/Login", methods=["GET", "POST"])
+@limiter.limit("50/hour")
 def login():
     if request.method == "POST":
         recaptcha_response = request.form.get('g-recaptcha-response')
@@ -331,7 +332,7 @@ def account():
 
 
 @app.route('/staff_accounts', methods=['GET'])
-@limiter.limit("50/hour")
+@limiter.limit("30/hour")
 def show_staff():
     if session.get('role') != 'admin':
         app.logger.warning('Unauthorized access attempt to staff accounts page by user %s',
@@ -388,7 +389,7 @@ def delete_customer(user_id):
 
 
 @app.route('/account/update', methods=['GET', 'POST'])
-@limiter.limit("10/hour")
+@limiter.limit("20/hour")
 def update_account():
     user = User.query.filter_by(username=session['username']).first()
 
@@ -621,7 +622,7 @@ def serve_image(filename):
 
 
 @app.route('/payment_details', methods=['GET', 'POST'])
-@limiter.limit("10/hour")
+@limiter.limit("30/hour")
 def create_payment():
     if 'username' not in session:
         app.logger.warning('User tried to add payment details without being logged in.')
@@ -647,7 +648,7 @@ def create_payment():
 
 
 @app.route('/retrieve_payment')
-@limiter.limit("10/hour")
+@limiter.limit("30/hour")
 def retrieve_payment():
     if 'username' not in session:
         app.logger.warning('User tried to view payment details without being logged in.')
@@ -677,7 +678,7 @@ def retrieve_payment():
 
 
 @app.route('/update_payment/<int:id>/', methods=['POST', 'GET'])
-@limiter.limit("10/hour")
+@limiter.limit("30/hour")
 def update_payment(id):
     if request.method == 'POST':
         form = Payment(request.form)
@@ -700,7 +701,7 @@ def update_payment(id):
 
 
 @app.route('/delete_payment/<int:id>', methods=['POST'])
-@limiter.limit("5/hour")
+@limiter.limit("30/hour")
 def delete_payment(id):
     payment = Payment.query.get(id)
 
@@ -716,7 +717,7 @@ def delete_payment(id):
 
 
 @app.route('/order', methods=['POST', 'GET'])
-@limiter.limit("10/hour")
+@limiter.limit("50/hour")
 def order_collection():
     collection_Type = collection_type(request.form)
     session['started_order_process'] = True
@@ -825,7 +826,7 @@ def add_to_cart(product_id):
 
 
 @app.route('/view_cart')
-@limiter.limit("10/hour")
+@limiter.limit("50/hour")
 def view_cart():
     if 'username' not in session:
         app.logger.warning('Unauthorized access attempt to view cart')
@@ -865,7 +866,7 @@ def view_cart():
 
 
 @app.route('/update_cart_item/<product_id>', methods=['POST', 'GET'])
-@limiter.limit("10/hour")
+@limiter.limit("50/hour")
 def update_cart_item(product_id):
     try:
         order_db = shelve.open('order.db', 'r')
@@ -909,7 +910,7 @@ def update_cart_item(product_id):
 
 
 @app.route('/remove_from_cart/<product_id>', methods=['POST'])
-@limiter.limit("10/hour")
+@limiter.limit("50/hour")
 def remove_from_cart(product_id):
     try:
         with shelve.open('order.db', 'r') as order_db:
@@ -937,7 +938,7 @@ def remove_from_cart(product_id):
 
 
 @app.route('/payment', methods=['GET', 'POST'])
-@limiter.limit("10/hour")
+@limiter.limit("50/hour")
 def payment_page():
 
     payment_detail = None
@@ -974,7 +975,7 @@ def payment_page():
 
 
 @app.route('/submit_payment', methods=['POST'])
-@limiter.limit("10/hour")
+@limiter.limit("50/hour")
 def submit_payment():
     if 'username' not in session:
         flash('You must be logged in to submit payment.', 'danger')
@@ -1041,7 +1042,7 @@ def submit_payment():
 
 
 @app.route('/success_payment')
-@limiter.limit("10/hour")
+@limiter.limit("50/hour")
 def success_payment():
     user = User.query.filter_by(username=session["username"]).first()
     if user:
@@ -1099,7 +1100,7 @@ def success_payment():
 
 
 @app.route('/orderHistory', methods=["GET"])
-# @limiter.limit("20/hour")
+@limiter.limit("30/hour")
 def order_history():
     username = session.get('username')
     orders = Order.query.filter_by(username=username).all()
@@ -1138,7 +1139,7 @@ def chat_bot_message():
 
 
 @app.route('/createFeedback', methods=['GET', 'POST'])
-@limiter.limit("10/hour")
+@limiter.limit("50/hour")
 def create_feedback():
     create_feedback_form = CreateFeedbackForm(request.form)
     if request.method == 'POST' and create_feedback_form.validate():
