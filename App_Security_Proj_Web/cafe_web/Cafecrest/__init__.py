@@ -323,8 +323,10 @@ def account():
     user = User.query.filter_by(username=session['username']).first()
 
     if user:
+        app.logger.info('Account page accessed by user %s', session['username'])
         return render_template('account.html', user=user)
     else:
+        app.logger.info('Account page accessed without a valid session')
         return redirect(url_for('home'))
 
 
@@ -332,9 +334,12 @@ def account():
 @limiter.limit("50/hour")
 def show_staff():
     if session.get('role') != 'admin':
+        app.logger.warning('Unauthorized access attempt to staff accounts page by user %s',
+                           session.get('username', 'unknown'))
         return "Access Denied. This feature requires admin-level access!", 403
 
     staff = User.query.filter_by(role='staff').all()
+    app.logger.info('Staff accounts page accessed by admin %s', session['username'])
     return render_template('staff_accounts.html', staff=staff)
 
 
@@ -351,9 +356,12 @@ def delete_user(user_id):
 @app.route('/customer_accounts', methods=['GET'])
 def show_customer():
     if session.get('role') != 'admin':
+        app.logger.warning('Unauthorized access attempt to customer accounts page by user %s',
+                           session.get('username', 'unknown'))
         return "Access Denied. This feature requires admin-level access!", 403
 
     customer = User.query.filter_by(role='user').all()
+    app.logger.info('Customer accounts page accessed by admin %s', session['username'])
     return render_template('customer_accounts.html', customer=customer)
 
 
@@ -399,6 +407,8 @@ def update_account():
         ).first()
 
         if existing_user:
+            app.logger.warning('Attempt to update account with existing username or email by user %s',
+                               session['username'])
             flash('Username or email already exists.', 'error')
             return redirect(url_for('update_account'))
 
@@ -412,6 +422,7 @@ def update_account():
         session['username'] = new_username
 
         db.session.commit()
+        app.logger.info('Account updated successfully for user %s', session['username'])
         flash('Account successfully updated.', 'success')
         return redirect(url_for('account'))
 
@@ -445,8 +456,10 @@ def delete_account():
 
         session.pop('username', None)
         session.pop('logged_in', None)
+        app.logger.info('Account deleted for user %s', session.get('username', 'unknown'))
         flash('Your account has been deleted.', 'success')
     else:
+        app.logger.warning('Attempt to delete non-existent account by user %s', session.get('username', 'unknown'))
         flash('User not found.', 'danger')
 
     return redirect(url_for('home'))
@@ -455,6 +468,7 @@ def delete_account():
 @app.route('/customerPortal/')
 def customer_portal():
     if 'username' not in session:
+        app.logger.warning('Unauthorized access attempt to customer portal')
         flash('You must be logged in to view your account portal', 'danger')
         return redirect(url_for('login'))
 
@@ -478,6 +492,7 @@ def customer_portal():
         else:
             user_category = "Bronze"
 
+        app.logger.info('Customer portal accessed by user %s', session['username'])
         return render_template('CustomerPortal.html', user=user, user_orders_count=user_orders_count, user_points_value=user_points_value, user_category=user_category)
     else:
         return redirect(url_for('home'))
@@ -609,6 +624,7 @@ def serve_image(filename):
 @limiter.limit("10/hour")
 def create_payment():
     if 'username' not in session:
+        app.logger.warning('User tried to add payment details without being logged in.')
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
 
@@ -625,6 +641,7 @@ def create_payment():
             db.session.commit()
 
             flash('Payment details added successfully.', 'success')
+            app.logger.info(f'Payment details added for user: {session["username"]}')
             return redirect(url_for('retrieve_payment'))
         return render_template('payment_details.html', form=form)
 
@@ -633,6 +650,7 @@ def create_payment():
 @limiter.limit("10/hour")
 def retrieve_payment():
     if 'username' not in session:
+        app.logger.warning('User tried to view payment details without being logged in.')
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
     payments = Payment.query.filter_by(username=session['username']).all()
@@ -654,6 +672,7 @@ def retrieve_payment():
             'cvv': decrypted_cvv,
             'card_name': payment.card_name})
 
+    app.logger.info(f'Payment details retrieved for user: {session["username"]}')
     return render_template('view_payment_details.html', count=len(payment_details_list), payment_details_list=payment_details_list)
 
 
@@ -684,6 +703,12 @@ def update_payment(id):
 @limiter.limit("5/hour")
 def delete_payment(id):
     payment = Payment.query.get(id)
+
+    if not payment:
+        flash("Payment not found", "error")
+        app.logger.error(f'Attempt to delete non-existent payment with ID {id} by user: {session["username"]}')
+        return redirect(url_for('retrieve_payment'))
+
     db.session.delete(payment)
     db.session.commit()
     flash("Payment details deleted successfully", "success")
@@ -713,8 +738,11 @@ def order_collection():
             cart[order_id] = []
             db['cart'] = cart
 
+        app.logger.info('Order collection started for order_id: %s by user: %s', order_id,
+                        session.get('username', 'unknown'))
         return redirect(url_for('show_products'))
 
+    app.logger.info('Order collection page accessed by user: %s', session.get('username', 'unknown'))
     return render_template('order_collection.html', form=collection_Type)
 
 
@@ -725,6 +753,7 @@ def show_products():
             orders = order_db.get('orders', {})
 
             if not orders:
+                app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
                 return render_template('error.html', error_message="Order not found")
 
             order_id = list(orders.keys())[-1]  # Assuming you want the latest order, adjust as needed
@@ -732,6 +761,7 @@ def show_products():
             cart = order_db.get('cart', {})
             order_cart = cart.get(order_id, [])
 
+        app.logger.info('Products page accessed by user: %s for order_id: %s', session.get('username', 'unknown'))
         return render_template('products.html', food=food, coffee=coffee, non_coffee=non_coffee, cart=order_cart)
 
     except Exception as e:
@@ -743,6 +773,8 @@ def add_to_cart(product_id):
     product = all_products.get(product_id)
 
     if not product:
+        app.logger.warning('Product not found (product_id: %s) for user: %s', product_id,
+                           session.get('username', 'unknown'))
         flash("Product not found", "error")
         return redirect(url_for('show_products'))
 
@@ -750,6 +782,7 @@ def add_to_cart(product_id):
     orders = order_db.get('orders', {})
 
     if not orders:
+        app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
         flash("Order not found", "error")
         order_db.close()
         return redirect(url_for('home'))
@@ -785,6 +818,7 @@ def add_to_cart(product_id):
 
         flash("Product added to cart successfully", "success")
         return redirect(url_for('show_products'))
+
     except:
         flash("An error occurred while adding the product to your cart. Please try again later.", "error")
         return redirect(url_for('home'))
@@ -794,10 +828,13 @@ def add_to_cart(product_id):
 @limiter.limit("10/hour")
 def view_cart():
     if 'username' not in session:
+        app.logger.warning('Unauthorized access attempt to view cart')
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
 
     if 'started_order_process' not in session:
+        app.logger.warning('Attempt to view cart without starting order process by user: %s',
+                           session.get('username', 'unknown'))
         flash("You must start the order process from the order-collection page.", "error")
         return redirect(url_for('order_collection'))
 
@@ -835,6 +872,7 @@ def update_cart_item(product_id):
         orders = order_db.get('orders', {})
 
         if not orders:
+            app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
             flash("Order not found", "error")
             order_db.close()
             return redirect(url_for('home'))
@@ -843,6 +881,7 @@ def update_cart_item(product_id):
         order_db.close()
 
         if not order_id:
+            app.logger.warning('Order ID not found for user: %s', session.get('username', 'unknown'))
             flash("Order not found", "error")
             return redirect(url_for('home'))
 
