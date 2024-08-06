@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
+from markupsafe import escape
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -71,7 +72,7 @@ def about_us():
 
 
 @app.route('/createStaffAccount', methods=["GET", "POST"])
-@limiter.limit("10/hour")
+@limiter.limit("5/minute")
 def create_staff_account():
     if session.get('role') != 'admin':
         app.logger.warning('Access Denied for non-admin user trying to access staff account creation')
@@ -146,7 +147,7 @@ def create_staff_account():
 
 
 @app.route("/createSignUp", methods=["GET", "POST"])
-@limiter.limit("30/hour")
+@limiter.limit("5/minute")
 def signup():
     if request.method == "POST":
         recaptcha_response = request.form.get('g-recaptcha-response')
@@ -234,7 +235,7 @@ def signup():
 
 
 @app.route("/Login", methods=["GET", "POST"])
-@limiter.limit("50/hour")
+@limiter.limit("5/minute")
 def login():
     if request.method == "POST":
         recaptcha_response = request.form.get('g-recaptcha-response')
@@ -257,7 +258,8 @@ def login():
         if user:
             if user.lockout_time and datetime.now() < user.lockout_time:
                 remaining_time = (user.lockout_time - datetime.now()).seconds // 60
-                app.logger.warning(f'User {username} attempted login while locked out. Remaining time: {remaining_time} minutes')
+                username = escape(session.get("username", ""))
+                app.logger.warning(f'user: {username} attempted login while locked out. Remaining time: {remaining_time} minutes')
                 flash(f'Too many failed login attempts. Please try again in {remaining_time} minutes.')
                 return render_template('Login.html')
 
@@ -332,7 +334,7 @@ def account():
 
 
 @app.route('/staff_accounts', methods=['GET'])
-@limiter.limit("30/hour")
+@limiter.limit("5/minute")
 def show_staff():
     if session.get('role') != 'admin':
         app.logger.warning('Unauthorized access attempt to staff accounts page by user %s',
@@ -355,6 +357,7 @@ def delete_user(user_id):
 
 
 @app.route('/customer_accounts', methods=['GET'])
+@limiter.limit("5/minute")
 def show_customer():
     if session.get('role') != 'admin':
         app.logger.warning('Unauthorized access attempt to customer accounts page by user %s',
@@ -389,7 +392,7 @@ def delete_customer(user_id):
 
 
 @app.route('/account/update', methods=['GET', 'POST'])
-@limiter.limit("20/hour")
+@limiter.limit("5/minute")
 def update_account():
     user = User.query.filter_by(username=session['username']).first()
 
@@ -431,7 +434,7 @@ def update_account():
 
 
 @app.route('/account/delete', methods=['POST'])
-@limiter.limit("10/hour")
+@limiter.limit("1/minute")
 def delete_account():
     user = User.query.filter_by(username=session['username']).first()
 
@@ -467,6 +470,7 @@ def delete_account():
 
 
 @app.route('/customerPortal/')
+@limiter.limit("5/minute")
 def customer_portal():
     if 'username' not in session:
         app.logger.warning('Unauthorized access attempt to customer portal')
@@ -530,17 +534,21 @@ def view_points():
 
 
 @app.route('/createProduct', methods=['GET', 'POST'])
+@limiter.limit("5/minute")
 def create_product():
+    if session.get('role') == 'user':
+        return "Access Denied. This feature requires staff & admin level access!", 403
+
     create_product_form = CreateProductForm(request.form)
     if request.method == 'POST':
         if 'photos' not in request.files:
             flash('No file part', 'error')
-            return redirect(request.url)
+            return redirect(url_for('create_product'))
 
         file = request.files['photos']
         if file.filename == '':
             flash('No selected file', 'error')
-            return redirect(request.url)
+            return redirect(url_for('create_product'))
 
         if file:
             filename = secure_filename(file.filename)
@@ -563,7 +571,7 @@ def create_product():
             return redirect(url_for('retrieve_product'))
 
         flash('File upload failed', 'error')
-        return redirect(request.url)
+        return redirect(url_for('create_product'))
 
     return render_template('createProduct.html', form=create_product_form)
 
@@ -575,6 +583,7 @@ def retrieve_product():
 
 
 @app.route('/updateProduct/<int:id>', methods=['GET', 'POST'])
+@limiter.limit("5/minute")
 def update_product(id):
     # Retrieve product by ID from the database
     product = Product.query.get_or_404(id)
@@ -602,6 +611,7 @@ def update_product(id):
 
 
 @app.route('/delete_product/<int:id>', methods=['POST'])
+@limiter.limit("1/minute")
 def delete_product(id):
     product = Product.query.get_or_404(id)
     db.session.delete(product)
@@ -622,7 +632,7 @@ def serve_image(filename):
 
 
 @app.route('/payment_details', methods=['GET', 'POST'])
-@limiter.limit("30/hour")
+@limiter.limit("3/minute")
 def create_payment():
     if 'username' not in session:
         app.logger.warning('User tried to add payment details without being logged in.')
@@ -648,7 +658,7 @@ def create_payment():
 
 
 @app.route('/retrieve_payment')
-@limiter.limit("30/hour")
+@limiter.limit("5/minute")
 def retrieve_payment():
     if 'username' not in session:
         app.logger.warning('User tried to view payment details without being logged in.')
@@ -678,7 +688,7 @@ def retrieve_payment():
 
 
 @app.route('/update_payment/<int:id>/', methods=['POST', 'GET'])
-@limiter.limit("30/hour")
+@limiter.limit("3/minute")
 def update_payment(id):
     if request.method == 'POST':
         form = Payment(request.form)
@@ -701,13 +711,14 @@ def update_payment(id):
 
 
 @app.route('/delete_payment/<int:id>', methods=['POST'])
-@limiter.limit("30/hour")
+@limiter.limit("3/minute")
 def delete_payment(id):
     payment = Payment.query.get(id)
 
     if not payment:
         flash("Payment not found", "error")
-        app.logger.error(f'Attempt to delete non-existent payment with ID {id} by user: {session["username"]}')
+        username = escape(session.get("username", ""))
+        app.logger.error(f'Attempt to delete non-existent payment with ID {id} by user: {username}')
         return redirect(url_for('retrieve_payment'))
 
     db.session.delete(payment)
@@ -717,7 +728,7 @@ def delete_payment(id):
 
 
 @app.route('/order', methods=['POST', 'GET'])
-@limiter.limit("50/hour")
+@limiter.limit("10/minute")
 def order_collection():
     collection_Type = collection_type(request.form)
     session['started_order_process'] = True
@@ -826,7 +837,7 @@ def add_to_cart(product_id):
 
 
 @app.route('/view_cart')
-@limiter.limit("50/hour")
+@limiter.limit("10/minute")
 def view_cart():
     if 'username' not in session:
         app.logger.warning('Unauthorized access attempt to view cart')
@@ -866,7 +877,7 @@ def view_cart():
 
 
 @app.route('/update_cart_item/<product_id>', methods=['POST', 'GET'])
-@limiter.limit("50/hour")
+@limiter.limit("10/minute")
 def update_cart_item(product_id):
     try:
         order_db = shelve.open('order.db', 'r')
@@ -910,7 +921,7 @@ def update_cart_item(product_id):
 
 
 @app.route('/remove_from_cart/<product_id>', methods=['POST'])
-@limiter.limit("50/hour")
+@limiter.limit("10/minute")
 def remove_from_cart(product_id):
     try:
         with shelve.open('order.db', 'r') as order_db:
@@ -938,7 +949,7 @@ def remove_from_cart(product_id):
 
 
 @app.route('/payment', methods=['GET', 'POST'])
-@limiter.limit("50/hour")
+@limiter.limit("10/minute")
 def payment_page():
 
     payment_detail = None
@@ -975,7 +986,7 @@ def payment_page():
 
 
 @app.route('/submit_payment', methods=['POST'])
-@limiter.limit("50/hour")
+@limiter.limit("10/minute")
 def submit_payment():
     if 'username' not in session:
         flash('You must be logged in to submit payment.', 'danger')
@@ -1042,65 +1053,68 @@ def submit_payment():
 
 
 @app.route('/success_payment')
-@limiter.limit("50/hour")
+@limiter.limit("10/minute")
 def success_payment():
     user = User.query.filter_by(username=session["username"]).first()
     if user:
-        order_db = shelve.open('order.db', 'r')
-        orders = order_db.get('orders', {})
+        try:
+            order_db = shelve.open('order.db', 'r')
+            orders = order_db.get('orders', {})
 
-        if not orders:
-            flash("Order not found", "error")
-            order_db.close()
-            return redirect(url_for('home'))
+            if not orders:
+                flash("Order not found", "error")
+                order_db.close()
+                return redirect(url_for('home'))
 
-        order_id = list(orders.keys())[-1]
+            order_id = list(orders.keys())[-1]
 
-        order_data = orders.get(order_id)
-        port = order_data
-        collection_type = order_data['collection_type']
+            order_data = orders.get(order_id)
+            port = order_data
+            collection_type = order_data['collection_type']
 
-        cart_db = shelve.open('order.db', 'r')
-        order_cart = cart_db.get('cart', {}).get(order_id, [])
-        cart_db.close()
+            cart_db = shelve.open('order.db', 'r')
+            order_cart = cart_db.get('cart', {}).get(order_id, [])
+            cart_db.close()
 
-        subtotal = calculate_subtotal(order_cart)
-        sales_tax = calculate_sales_tax(subtotal)
-        delivery_amount = calculate_delivery_amount(collection_type)
-        grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_type)
+            subtotal = calculate_subtotal(order_cart)
+            sales_tax = calculate_sales_tax(subtotal)
+            delivery_amount = calculate_delivery_amount(collection_type)
+            grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_type)
 
-        grand_total_cents = int(grand_total * 100)
-        points_earned = 5 * (grand_total_cents // 100)
+            grand_total_cents = int(grand_total * 100)
+            points_earned = 5 * (grand_total_cents // 100)
 
-        extracted_items = []
-        for item in order_cart:
-            extracted_items.append({item['name'], item['quantity']})
-        itemize_json = str(extracted_items).replace("'", '"')
+            extracted_items = []
+            for item in order_cart:
+                extracted_items.append({item['name'], item['quantity']})
+            itemize_json = str(extracted_items).replace("'", '"')
 
-        new_order = Order(username=session["username"], id=order_id, order_data=port['collection_type'],
-                          items=itemize_json, total=grand_total)
-        db.session.add(new_order)
-        db.session.commit()
+            new_order = Order(username=session["username"], id=order_id, order_data=port['collection_type'], items=itemize_json, total=grand_total)
+            db.session.add(new_order)
+            db.session.commit()
 
-        user_points_record = UserPoints.query.filter_by(username=user.username).first()
-        if user_points_record:
-            user_points_record.points += points_earned
-        else:
-            new_points_record = UserPoints(username=user.username, points=points_earned)
-            db.session.add(new_points_record)
-        db.session.commit()
+            user_points_record = UserPoints.query.filter_by(username=user.username).first()
+            if user_points_record:
+                user_points_record.points += points_earned
+            else:
+                new_points_record = UserPoints(username=user.username, points=points_earned)
+                db.session.add(new_points_record)
+            db.session.commit()
 
-        with shelve.open('order.db', 'c', writeback=True) as order_db:
-            if 'orders' in order_db:
-                order_db['orders'].pop(order_id)
-            if 'cart' in order_db:
-                order_db['cart'].pop(order_id)
+            with shelve.open('order.db', 'c', writeback=True) as order_db:
+                if 'orders' in order_db:
+                    order_db['orders'].pop(order_id)
+                if 'cart' in order_db:
+                    order_db['cart'].pop(order_id)
 
-        return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
+            return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
+        except Exception as e:
+            app.logger.error(f"An unexpected error occurred: {str(e)}", exc_info=True)
+            flash("An unexpected error occurred. Please try again later.", "error")
 
 
 @app.route('/orderHistory', methods=["GET"])
-@limiter.limit("30/hour")
+@limiter.limit("10/minute")
 def order_history():
     username = session.get('username')
     orders = Order.query.filter_by(username=username).all()
@@ -1112,7 +1126,7 @@ def order_history():
 
 
 @app.route('/customerOrder', methods=["GET"])
-@limiter.limit("50/hour")
+@limiter.limit("10/minute")
 def customer_order():
     if session.get('role') == 'user':
         return "Access Denied. This feature requires staff & admin level access!", 403
@@ -1139,7 +1153,7 @@ def chat_bot_message():
 
 
 @app.route('/createFeedback', methods=['GET', 'POST'])
-@limiter.limit("50/hour")
+@limiter.limit("5/minute")
 def create_feedback():
     create_feedback_form = CreateFeedbackForm(request.form)
     if request.method == 'POST' and create_feedback_form.validate():
