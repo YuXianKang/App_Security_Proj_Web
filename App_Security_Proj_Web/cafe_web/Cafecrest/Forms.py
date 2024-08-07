@@ -1,5 +1,6 @@
-from wtforms import Form, StringField,FloatField, validators, SelectField, ValidationError, IntegerField, FileField, SubmitField
+from wtforms import Form, StringField, FloatField, validators, SelectField, ValidationError, IntegerField, FileField, SubmitField
 from wtforms.validators import DataRequired
+
 
 class CreateProductForm(Form):
     name = StringField('Product name', [validators.Length(min=1, max=150), validators.DataRequired()])
@@ -19,7 +20,6 @@ class payment(Form):
 
 class collection_type (Form):
     collection_type = SelectField('Collection Type', choices=[('pickup', 'In-Store Pickup'), ('dine-in', 'Dine-In')],)
-
 
 
 def validate_name(form, field):

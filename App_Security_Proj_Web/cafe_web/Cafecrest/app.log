@@ -15,3 +15,11 @@
 2024-08-08 00:32:12,812 - INFO - Account page accessed by user KYX12
 2024-08-08 00:32:15,206 - INFO - Account deleted for user unknown
 2024-08-08 00:32:15,323 - INFO - Home Page Accessed!
+2024-08-08 00:54:16,395 - INFO - Home Page Accessed!
+2024-08-08 00:54:33,525 - INFO - Home Page Accessed!
+2024-08-08 00:54:35,795 - INFO - Order collection page accessed by user: unknown
+2024-08-08 00:54:37,446 - INFO - About Us Page Accessed!
+2024-08-08 00:54:49,174 - INFO - Login Page Accessed!
+2024-08-08 00:54:51,693 - INFO - Home Page Accessed!
+2024-08-08 00:54:52,297 - INFO - Home Page Accessed!
+2024-08-08 00:54:57,899 - WARNING - Access Denied for non-admin user trying to access staff account creation

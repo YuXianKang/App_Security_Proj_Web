@@ -10,28 +10,24 @@ from markupsafe import escape
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import timedelta, datetime
-from error_handle import eh as errors_bp
+from Error_handle_routes import eh as errors_bp
 from App_config import config
 from Account_Lockout import max_attempts, lockout_duration
 import re
-import payment_storage
 import os
 import shelve
 import uuid
 import requests
 from products import food, coffee, non_coffee, all_products
 from Encryption_Payment import encrypt_data, decrypt_data
-from Order_Calculation import calculate_subtotal, calculate_sales_tax, calculate_grand_total, calculate_delivery_amount
-import logging
-from logging.handlers import RotatingFileHandler
+from Order_Calculation import *
+from logging_config import configure_logging
 
 app = Flask(__name__)
 app.config.from_object(config)
 app.register_blueprint(errors_bp)
 
 limiter = Limiter(key_func=get_remote_address, app=app)
-
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 
 def allowed_file(filename):
@@ -47,14 +43,7 @@ db.init_app(app)
 
 new_product = None
 
-if not app.debug:
-    file_handler = RotatingFileHandler('app.log', maxBytes=10240, backupCount=10)
-    file_handler.setLevel(logging.INFO)
-
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(formatter)
-    app.logger.addHandler(file_handler)
-    app.logger.setLevel(logging.INFO)
+configure_logging(app)
 
 
 @app.route('/')
@@ -1194,9 +1183,3 @@ def delete_feedback(feedback_id):
         flash('An error occurred while deleting the feedback.', 'danger')
 
     return redirect(url_for('retrieve_feedback'))
-
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run()

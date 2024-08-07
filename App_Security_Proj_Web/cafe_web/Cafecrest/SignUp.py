@@ -1,4 +1,4 @@
-from login import Login
+from Login import Login
 
 
 class SignUp(Login):
