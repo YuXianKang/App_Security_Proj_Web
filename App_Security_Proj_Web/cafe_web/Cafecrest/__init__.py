@@ -70,7 +70,7 @@ def about_us():
 
 
 @app.route('/createStaffAccount', methods=["GET", "POST"])
-@limiter.limit("10/hour")
+@limiter.limit("5/minute")
 def create_staff_account():
     if session.get('role') != 'admin':
         app.logger.warning('Access Denied for non-admin user trying to access staff account creation')
@@ -145,7 +145,7 @@ def create_staff_account():
 
 
 @app.route("/createSignUp", methods=["GET", "POST"])
-@limiter.limit("10/hour")
+@limiter.limit("5/minute")
 def signup():
     if request.method == "POST":
         recaptcha_response = request.form.get('g-recaptcha-response')
