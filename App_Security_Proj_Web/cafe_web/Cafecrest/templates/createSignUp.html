@@ -64,20 +64,47 @@
   .strength-strong {
     color: green;
   }
+
+  .valid {
+    border: 2px solid green;
+  }
+
+  .invalid {
+    border: 2px solid red;
+  }
+
+  .error-message {
+    color: red;
+    font-size: 0.8rem;
+    margin-top: -0.5rem;
+    margin-bottom: 0.5rem;
+  }
 </style>
 
 <div class="signup-centered">
   <form method="POST" id="signup">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="text" name="firstn" placeholder="First Name" required>
-    <input type="text" name="lastn" placeholder="Last Name" required>
-    <input type="tel" name="mobile" placeholder="Mobile Number" pattern="[89]\d{7}" required>
-    <input type="email" name="email" placeholder="Email" required>
+    <input type="text" name="username" id="username" placeholder="Username" required>
+    <div class="error-message" id="username-error"></div>
+
+    <input type="text" name="firstn" id="firstn" placeholder="First Name" required>
+    <div class="error-message" id="firstn-error"></div>
+
+    <input type="text" name="lastn" id="lastn" placeholder="Last Name" required>
+    <div class="error-message" id="lastn-error"></div>
+
+    <input type="tel" name="mobile" id="mobile" placeholder="Mobile Number" required>
+    <div class="error-message" id="mobile-error"></div>
+
+    <input type="email" name="email" id="email" placeholder="Email" required>
+    <div class="error-message" id="email-error"></div>
+
     <input type="password" name="password" id="password" placeholder="Password" required>
     <div class="password-hint">
       Password must be at least 8 characters, contain an uppercase letter, a lowercase letter, a number, and a special character.
     </div>
     <div class="password-strength" id="password-strength"></div>
+    <div class="error-message" id="password-error"></div>
+
     <div class="g-recaptcha" data-sitekey="6LdKdRcqAAAAAH8hbSx1-fPVrtAV7r5gfnPWlT9g"></div>
     <button type="submit">Sign Up</button>
   </form>
@@ -85,20 +112,99 @@
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
+  document.getElementById('username').addEventListener('input', function() {
+    const username = this.value;
+    const usernameError = document.getElementById('username-error');
+    const usernamePattern = /^[a-zA-Z0-9_]+$/;
+
+    if (usernamePattern.test(username)) {
+      this.classList.add('valid');
+      this.classList.remove('invalid');
+      usernameError.textContent = '';
+    } else {
+      this.classList.add('invalid');
+      this.classList.remove('valid');
+      usernameError.textContent = 'Username can only contain letters, numbers, and underscores.';
+    }
+  });
+
+  document.getElementById('firstn').addEventListener('input', function() {
+    const firstn = this.value;
+    const firstnError = document.getElementById('firstn-error');
+    const namePattern = /^[a-zA-Z]+$/;
+
+    if (namePattern.test(firstn)) {
+      this.classList.add('valid');
+      this.classList.remove('invalid');
+      firstnError.textContent = '';
+    } else {
+      this.classList.add('invalid');
+      this.classList.remove('valid');
+      firstnError.textContent = 'First name can only contain letters.';
+    }
+  });
+
+  document.getElementById('lastn').addEventListener('input', function() {
+    const lastn = this.value;
+    const lastnError = document.getElementById('lastn-error');
+    const namePattern = /^[a-zA-Z]+$/;
+
+    if (namePattern.test(lastn)) {
+      this.classList.add('valid');
+      this.classList.remove('invalid');
+      lastnError.textContent = '';
+    } else {
+      this.classList.add('invalid');
+      this.classList.remove('valid');
+      lastnError.textContent = 'Last name can only contain letters.';
+    }
+  });
+
+  document.getElementById('mobile').addEventListener('input', function() {
+    const mobile = this.value;
+    const mobileError = document.getElementById('mobile-error');
+    const mobilePattern = /^[89]\d{7}$/;
+
+    if (mobilePattern.test(mobile)) {
+      this.classList.add('valid');
+      this.classList.remove('invalid');
+      mobileError.textContent = '';
+    } else {
+      this.classList.add('invalid');
+      this.classList.remove('valid');
+      mobileError.textContent = 'Mobile number must be 8 digits long and start with 8 or 9.';
+    }
+  });
+
+  document.getElementById('email').addEventListener('input', function() {
+    const email = this.value;
+    const emailError = document.getElementById('email-error');
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (emailPattern.test(email)) {
+      this.classList.add('valid');
+      this.classList.remove('invalid');
+      emailError.textContent = '';
+    } else {
+      this.classList.add('invalid');
+      this.classList.remove('valid');
+      emailError.textContent = 'Invalid email address.';
+    }
+  });
+
   document.getElementById('password').addEventListener('input', function() {
     const password = this.value;
+    const passwordError = document.getElementById('password-error');
+    const strengthDisplay = document.getElementById('password-strength');
     let strength = 'Weak';
     let strengthClass = 'strength-weak';
 
-    // Check the length of the password
     if (password.length >= 8) {
-      // Check for the presence of required characters
       const hasUpperCase = /[A-Z]/.test(password);
       const hasLowerCase = /[a-z]/.test(password);
       const hasNumbers = /[0-9]/.test(password);
       const hasSpecialChars = /[\W_]/.test(password);
 
-      // Determine strength based on criteria
       if (hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars) {
         strength = 'Strong';
         strengthClass = 'strength-strong';
@@ -108,9 +214,18 @@
       }
     }
 
-    const strengthDisplay = document.getElementById('password-strength');
     strengthDisplay.textContent = Password strength: ${strength};
     strengthDisplay.className = password-strength ${strengthClass};
+
+    if (strength === 'Strong') {
+      this.classList.add('valid');
+      this.classList.remove('invalid');
+      passwordError.textContent = '';
+    } else {
+      this.classList.add('invalid');
+      this.classList.remove('valid');
+      passwordError.textContent = 'Password does not meet the requirements.';
+    }
   });
 </script>
 

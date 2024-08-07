@@ -70,7 +70,7 @@ def about_us():
 
 
 @app.route('/createStaffAccount', methods=["GET", "POST"])
-@limiter.limit("5/minute")
+@limiter.limit("10/hour")
 def create_staff_account():
     if session.get('role') != 'admin':
         app.logger.warning('Access Denied for non-admin user trying to access staff account creation')
@@ -86,18 +86,18 @@ def create_staff_account():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
 
-            # Check for spaces in fields
-            if ' ' in username:
-                flash('Username cannot contain spaces.')
+            # Validate fields with regular expressions
+            if not re.match(r'^[a-zA-Z0-9_]+$', username):
+                flash('Username can only contain letters, numbers, and underscores.')
                 return render_template('createStaffSignUp.html')
-            if ' ' in firstn:
-                flash('First name cannot contain spaces.')
+            if not re.match(r'^[a-zA-Z]+$', firstn):
+                flash('First name can only contain letters.')
                 return render_template('createStaffSignUp.html')
-            if ' ' in lastn:
-                flash('Last name cannot contain spaces.')
+            if not re.match(r'^[a-zA-Z]+$', lastn):
+                flash('Last name can only contain letters.')
                 return render_template('createStaffSignUp.html')
-            if ' ' in mobile:
-                flash('Mobile number cannot contain spaces.')
+            if not re.match(r'^\d+$', mobile):
+                flash('Mobile number can only contain digits.')
                 return render_template('createStaffSignUp.html')
             if ' ' in email:
                 flash('Email cannot contain spaces.')
@@ -145,7 +145,7 @@ def create_staff_account():
 
 
 @app.route("/createSignUp", methods=["GET", "POST"])
-@limiter.limit("5/minute")
+@limiter.limit("10/hour")
 def signup():
     if request.method == "POST":
         recaptcha_response = request.form.get('g-recaptcha-response')
@@ -170,18 +170,18 @@ def signup():
             password = request.form.get('password')
             hashed_password = generate_password_hash(password)
 
-            # Check for spaces in fields
-            if ' ' in username:
-                flash('Username cannot contain spaces.')
+            # Validate fields with regular expressions
+            if not re.match(r'^[a-zA-Z0-9_]+$', username):
+                flash('Username can only contain letters, numbers, and underscores.')
                 return render_template('createSignUp.html')
-            if ' ' in firstn:
-                flash('First name cannot contain spaces.')
+            if not re.match(r'^[a-zA-Z]+$', firstn):
+                flash('First name can only contain letters.')
                 return render_template('createSignUp.html')
-            if ' ' in lastn:
-                flash('Last name cannot contain spaces.')
+            if not re.match(r'^[a-zA-Z]+$', lastn):
+                flash('Last name can only contain letters.')
                 return render_template('createSignUp.html')
-            if ' ' in mobile:
-                flash('Mobile number cannot contain spaces.')
+            if not re.match(r'^\d+$', mobile):
+                flash('Mobile number can only contain digits.')
                 return render_template('createSignUp.html')
             if ' ' in email:
                 flash('Email cannot contain spaces.')
@@ -212,6 +212,7 @@ def signup():
             if existing_user:
                 if existing_user.username == username:
                     flash('Username already taken. Please choose a different username.')
+                    return render_template('createSignUp.html')
 
             key = Fernet.generate_key()
 
