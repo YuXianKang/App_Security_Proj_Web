@@ -673,29 +673,6 @@ def retrieve_payment():
     return render_template('view_payment_details.html', count=len(payment_details_list), payment_details_list=payment_details_list)
 
 
-@app.route('/update_payment/<int:id>/', methods=['POST', 'GET'])
-@limiter.limit("3/minute")
-def update_payment(id):
-    if request.method == 'POST':
-        form = Payment(request.form)
-
-        payment = Payment.query.get(id)
-        payment.card_number = form.card_number.data
-        payment.expiration_date = form.expiration_date.data
-        payment.cvv = form.cvv.data
-        payment.card_name = form.card_name.data
-
-        db.session.commit()
-
-        flash("Payment details updated successfully", "success")
-        return redirect(url_for('retrieve_payment'))
-    else:
-        payment = Payment.query.get_or_404(id)
-        form = Payment(card_number=payment.card_number, expiration_date=payment.expiration_date,  cvv=payment.cvv,  card_name=payment.card_name)
-
-    return render_template('update_payment_details.html', form=form, id=id)
-
-
 @app.route('/delete_payment/<int:id>', methods=['POST'])
 @limiter.limit("3/minute")
 def delete_payment(id):
