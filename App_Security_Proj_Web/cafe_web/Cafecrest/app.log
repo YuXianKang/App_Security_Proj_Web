@@ -1,30 +1,65 @@
-2024-08-06 16:50:49,306 - INFO - Home Page Accessed!
-2024-08-08 00:14:21,307 - INFO - Home Page Accessed!
-2024-08-08 00:15:42,096 - ERROR - Failed to sign up user. Email already registered: isaackang2006@gmail.com
-2024-08-08 00:15:42,109 - INFO - Login Page Accessed!
-2024-08-08 00:16:01,554 - INFO - Home Page Accessed!
-2024-08-08 00:24:15,073 - INFO - Home Page Accessed!
-2024-08-08 00:30:54,767 - INFO - Home Page Accessed!
-2024-08-08 00:31:41,442 - INFO - New User Signed Up: KYX12
-2024-08-08 00:31:41,453 - INFO - Home Page Accessed!
-2024-08-08 00:31:43,223 - INFO - Login Page Accessed!
-2024-08-08 00:32:04,582 - INFO - Home Page Accessed!
-2024-08-08 00:32:07,437 - INFO - Customer portal accessed by user KYX12
-2024-08-08 00:32:09,867 - INFO - Home Page Accessed!
-2024-08-08 00:32:11,166 - INFO - Customer portal accessed by user KYX12
-2024-08-08 00:32:12,812 - INFO - Account page accessed by user KYX12
-2024-08-08 00:32:15,206 - INFO - Account deleted for user unknown
-2024-08-08 00:32:15,323 - INFO - Home Page Accessed!
-2024-08-08 00:54:16,395 - INFO - Home Page Accessed!
-2024-08-08 00:54:33,525 - INFO - Home Page Accessed!
-2024-08-08 00:54:35,795 - INFO - Order collection page accessed by user: unknown
-2024-08-08 00:54:37,446 - INFO - About Us Page Accessed!
-2024-08-08 00:54:49,174 - INFO - Login Page Accessed!
-2024-08-08 00:54:51,693 - INFO - Home Page Accessed!
-2024-08-08 00:54:52,297 - INFO - Home Page Accessed!
-2024-08-08 00:54:57,899 - WARNING - Access Denied for non-admin user trying to access staff account creation
-2024-08-08 01:01:07,030 - INFO - Home Page Accessed!
-2024-08-08 01:01:08,262 - INFO - Login Page Accessed!
-2024-08-08 01:01:12,004 - INFO - Home Page Accessed!
-2024-08-08 07:04:28,933 - INFO - Home Page Accessed!
-2024-08-08 07:06:34,694 - INFO - Home Page Accessed!
+2024-08-08 21:55:09,418 - INFO - Customer accounts page accessed by admin KYX
+2024-08-08 21:55:10,278 - INFO - Home Page Accessed!
+2024-08-08 21:55:50,107 - INFO - Home Page Accessed!
+2024-08-08 21:56:36,736 - INFO - Staff accounts page accessed by admin KYX
+2024-08-08 21:57:39,923 - INFO - Home Page Accessed!
+2024-08-08 21:57:44,784 - INFO - Staff accounts page accessed by admin KYX
+2024-08-08 21:57:47,304 - INFO - User logged out
+2024-08-08 21:57:47,312 - INFO - Home Page Accessed!
+2024-08-08 21:57:48,015 - INFO - Login Page Accessed!
+2024-08-08 21:57:57,393 - INFO - Home Page Accessed!
+2024-08-08 21:58:11,022 - WARNING - Access Denied for non-admin user trying to access staff account creation
+2024-08-08 21:58:15,699 - INFO - User logged out
+2024-08-08 21:58:15,708 - INFO - Home Page Accessed!
+2024-08-08 21:58:16,433 - INFO - Login Page Accessed!
+2024-08-08 21:58:23,716 - WARNING - reCAPTCHA verification failed during login
+2024-08-08 21:58:34,893 - INFO - Home Page Accessed!
+2024-08-08 21:59:00,461 - INFO - Staff accounts page accessed by admin KYX
+2024-08-08 21:59:06,118 - INFO - User logged out
+2024-08-08 21:59:06,140 - INFO - Home Page Accessed!
+2024-08-08 21:59:07,141 - INFO - Login Page Accessed!
+2024-08-08 21:59:27,894 - INFO - Home Page Accessed!
+2024-08-08 21:59:39,687 - INFO - Home Page Accessed!
+2024-08-08 21:59:42,568 - INFO - Account page accessed by user YX12
+2024-08-08 21:59:44,822 - INFO - Account deleted for user unknown
+2024-08-08 21:59:44,829 - INFO - Home Page Accessed!
+2024-08-08 21:59:45,841 - INFO - User logged out
+2024-08-08 21:59:45,850 - INFO - Home Page Accessed!
+2024-08-08 21:59:46,415 - INFO - Login Page Accessed!
+2024-08-08 22:00:04,117 - INFO - Home Page Accessed!
+2024-08-08 22:00:06,784 - INFO - Staff accounts page accessed by admin KYX
+2024-08-08 22:01:19,388 - INFO - Staff accounts page accessed by admin KYX
+2024-08-08 22:01:33,980 - INFO - Home Page Accessed!
+2024-08-08 22:01:38,371 - INFO - Staff accounts page accessed by admin KYX
+2024-08-08 22:04:17,941 - INFO - Staff accounts page accessed by admin KYX
+2024-08-08 22:04:22,611 - INFO - Staff accounts page accessed by admin KYX
+2024-08-08 22:04:32,476 - INFO - User logged out
+2024-08-08 22:04:32,497 - INFO - Home Page Accessed!
+2024-08-08 22:04:33,240 - INFO - Login Page Accessed!
+2024-08-08 22:04:49,433 - INFO - Home Page Accessed!
+2024-08-08 22:04:52,258 - INFO - Account page accessed by user YX12
+2024-08-08 22:05:07,679 - INFO - Account deleted for user unknown
+2024-08-08 22:05:07,690 - INFO - Home Page Accessed!
+2024-08-08 22:05:28,015 - ERROR - Exception on /account [GET]
+Traceback (most recent call last):
+  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\App_Security_Proj_Web\cafe_web\Cafecrest\App_Routes.py", line 314, in account
+    user = User.query.filter_by(username=session['username']).first()
+                                         ~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\sessions.py", line 84, in __getitem__
+    return super().__getitem__(key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'username'
+2024-08-08 22:05:37,876 - INFO - User logged out
+2024-08-08 22:05:37,883 - INFO - Home Page Accessed!

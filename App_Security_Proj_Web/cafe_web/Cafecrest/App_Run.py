@@ -1,4 +1,4 @@
-from Routes import app, db
+from App_Routes import app, db
 
 if __name__ == '__main__':
     with app.app_context():

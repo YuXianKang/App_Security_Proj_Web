@@ -369,9 +369,7 @@ def delete_customer(user_id):
     for order in orders:
         db.session.delete(order)
 
-    user_points = UserPoints.query.filter_by(username=user.username).first()
-    if user_points:
-        db.session.delete(user_points)
+    UserPoints.query.filter_by(username=user.username).delete()
 
     db.session.delete(user)
     db.session.commit()
@@ -748,6 +746,9 @@ def order_collection():
 
 @app.route('/products', endpoint='show_products')
 def show_products():
+    if 'started_order_process' not in session:
+        flash("You must start the order process from the order-collection page.", "error")
+        return redirect(url_for('order_collection'))
     try:
         with shelve.open('order.db', 'c') as order_db:
             orders = order_db.get('orders', {})
@@ -756,7 +757,7 @@ def show_products():
                 app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
                 return render_template('error.html', error_message="Order not found")
 
-            order_id = list(orders.keys())[-1]  # Assuming you want the latest order, adjust as needed
+            order_id = list(orders.keys())[-1]
 
             cart = order_db.get('cart', {})
             order_cart = cart.get(order_id, [])
@@ -1095,6 +1096,8 @@ def success_payment():
                 if 'cart' in order_db:
                     order_db['cart'].pop(order_id)
 
+            session.pop('started_order_process', None)
+
             return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
         except Exception as e:
             app.logger.error(f"An unexpected error occurred: {str(e)}", exc_info=True)
@@ -1160,14 +1163,20 @@ def retrieve_feedback():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
 
-    feedbacks = Feed_back.query.all()
+    feedbacks = Feed_back.query.all()  # Call the all() method
     feedbacks_list = []
 
     for feedback in feedbacks:
-        feedbacks_list.append({'id': feedback.id, 'name': feedback.name, 'mobile_no': feedback.mobile_no, 'service': feedback.service, 'food': feedback.food, 'feedback': feedback.feedback})
+        feedbacks_list.append({
+            'id': feedback.id,
+            'name': feedback.name,
+            'mobile_no': feedback.mobile_no,
+            'service': feedback.service,
+            'food': feedback.food,
+            'feedback': feedback.feedback,
+        })
 
     return render_template('retrieveFeedback.html', count=len(feedbacks_list), feedbacks_list=feedbacks_list)
-
 
 @app.route('/deleteFeedback/<int:feedback_id>', methods=['POST'])
 @limiter.limit("10/hour")
