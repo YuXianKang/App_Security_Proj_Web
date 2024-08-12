@@ -22,8 +22,6 @@ from products import food, coffee, non_coffee, all_products
 from Encryption_Payment import encrypt_data, decrypt_data
 from Order_Calculation import *
 from logging_config import configure_logging
-import logging
-from mysql_handler import MySQLHandler
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -47,18 +45,6 @@ new_product = None
 
 configure_logging(app)
 
-# Configure logging
-handler = MySQLHandler(
-    host='localhost',            # Your MySQL host
-    database='cafecrest',    # Your MySQL database name
-    user='cafecrest',        # Your MySQL username
-    password='Oscar1oscar1',    # Your MySQL password
-    table='logs'                 # Your logs table name
-)
-handler.setLevel(logging.INFO)  # Set log level
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-app.logger.addHandler(handler)
 
 @app.route('/')
 def home():
@@ -1173,6 +1159,7 @@ def retrieve_feedback():
         })
 
     return render_template('retrieveFeedback.html', count=len(feedbacks_list), feedbacks_list=feedbacks_list)
+
 
 @app.route('/deleteFeedback/<int:feedback_id>', methods=['POST'])
 @limiter.limit("10/hour")

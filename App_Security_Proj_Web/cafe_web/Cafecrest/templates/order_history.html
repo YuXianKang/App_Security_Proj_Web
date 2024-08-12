@@ -34,14 +34,14 @@
                     <th>#</th>
                     <th>Order ID</th>
                     <th>Collection Type</th>
-                    <th>Items</th>
+                    <th>Items & Quantity</th>
                     <th>Grand Total</th>
                 </tr>
             </thead>
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td></td>
+                    <td>{{ loop.index }}</td>
                     <td>{{ order.id }}</td>
                     <td>{{ order.order_data }}</td>
                     <td>{{ order.items }}</td>
