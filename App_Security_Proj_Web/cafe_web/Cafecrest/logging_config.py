@@ -3,6 +3,8 @@ from mysql_handler_log import MySQLHandler
 
 
 def configure_logging(app):
+    app.logger.setLevel(logging.INFO)
+
     handler = MySQLHandler(
         host='localhost',
         database='cafecrest',

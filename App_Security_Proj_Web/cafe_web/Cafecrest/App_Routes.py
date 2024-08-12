@@ -1102,6 +1102,8 @@ def order_history():
 @limiter.limit("10/minute")
 def customer_order():
     if session.get('role') == 'user':
+        app.logger.warning('Unauthorized access attempt to customer order page by user %s',
+                           session.get('username', 'unknown'))
         return "Access Denied. This feature requires staff & admin level access!", 403
 
     orders = Order.query.all()

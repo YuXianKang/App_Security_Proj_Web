@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func
 
 db = SQLAlchemy()
 
@@ -18,6 +19,15 @@ class User(db.Model):
 
     def __repr__(self):
         return f"User('{self.username}', '{self.firstn}', '{self.lastn}', '{self.mobile}' ,'{self.email}', '{self.role}', '{self.login_attempts}', '{self.lockout_time}')"
+
+
+class Log(db.Model):
+    __tablename__ = 'logs'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    levelname = db.Column(db.String(50), nullable=True)
+    message = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.TIMESTAMP, server_default=func.current_timestamp(), nullable=True)
 
 
 class Payment(db.Model):
