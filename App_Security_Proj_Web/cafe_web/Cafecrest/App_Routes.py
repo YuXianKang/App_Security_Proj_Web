@@ -1140,7 +1140,7 @@ def create_feedback():
 
 
 @app.route('/retrieveFeedback')
-@limiter.limit("20/hour")
+@limiter.limit("3/minute")
 def retrieve_feedback():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
@@ -1162,7 +1162,7 @@ def retrieve_feedback():
 
 
 @app.route('/deleteFeedback/<int:feedback_id>', methods=['POST'])
-@limiter.limit("10/hour")
+@limiter.limit("3/minute")
 def delete_feedback(feedback_id):
     feedback_to_delete = Feed_back.query.get_or_404(feedback_id)
 

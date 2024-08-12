@@ -1,5 +1,4 @@
 import logging
-from flask import Flask
 from mysql_handler_log import MySQLHandler
 
 
