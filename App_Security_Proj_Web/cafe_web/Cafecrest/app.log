@@ -1,65 +1,107 @@
-2024-08-08 21:55:09,418 - INFO - Customer accounts page accessed by admin KYX
-2024-08-08 21:55:10,278 - INFO - Home Page Accessed!
-2024-08-08 21:55:50,107 - INFO - Home Page Accessed!
-2024-08-08 21:56:36,736 - INFO - Staff accounts page accessed by admin KYX
-2024-08-08 21:57:39,923 - INFO - Home Page Accessed!
-2024-08-08 21:57:44,784 - INFO - Staff accounts page accessed by admin KYX
-2024-08-08 21:57:47,304 - INFO - User logged out
-2024-08-08 21:57:47,312 - INFO - Home Page Accessed!
-2024-08-08 21:57:48,015 - INFO - Login Page Accessed!
-2024-08-08 21:57:57,393 - INFO - Home Page Accessed!
-2024-08-08 21:58:11,022 - WARNING - Access Denied for non-admin user trying to access staff account creation
-2024-08-08 21:58:15,699 - INFO - User logged out
-2024-08-08 21:58:15,708 - INFO - Home Page Accessed!
-2024-08-08 21:58:16,433 - INFO - Login Page Accessed!
-2024-08-08 21:58:23,716 - WARNING - reCAPTCHA verification failed during login
-2024-08-08 21:58:34,893 - INFO - Home Page Accessed!
-2024-08-08 21:59:00,461 - INFO - Staff accounts page accessed by admin KYX
-2024-08-08 21:59:06,118 - INFO - User logged out
-2024-08-08 21:59:06,140 - INFO - Home Page Accessed!
-2024-08-08 21:59:07,141 - INFO - Login Page Accessed!
-2024-08-08 21:59:27,894 - INFO - Home Page Accessed!
-2024-08-08 21:59:39,687 - INFO - Home Page Accessed!
-2024-08-08 21:59:42,568 - INFO - Account page accessed by user YX12
-2024-08-08 21:59:44,822 - INFO - Account deleted for user unknown
-2024-08-08 21:59:44,829 - INFO - Home Page Accessed!
-2024-08-08 21:59:45,841 - INFO - User logged out
-2024-08-08 21:59:45,850 - INFO - Home Page Accessed!
-2024-08-08 21:59:46,415 - INFO - Login Page Accessed!
-2024-08-08 22:00:04,117 - INFO - Home Page Accessed!
-2024-08-08 22:00:06,784 - INFO - Staff accounts page accessed by admin KYX
-2024-08-08 22:01:19,388 - INFO - Staff accounts page accessed by admin KYX
-2024-08-08 22:01:33,980 - INFO - Home Page Accessed!
-2024-08-08 22:01:38,371 - INFO - Staff accounts page accessed by admin KYX
-2024-08-08 22:04:17,941 - INFO - Staff accounts page accessed by admin KYX
-2024-08-08 22:04:22,611 - INFO - Staff accounts page accessed by admin KYX
-2024-08-08 22:04:32,476 - INFO - User logged out
-2024-08-08 22:04:32,497 - INFO - Home Page Accessed!
-2024-08-08 22:04:33,240 - INFO - Login Page Accessed!
-2024-08-08 22:04:49,433 - INFO - Home Page Accessed!
-2024-08-08 22:04:52,258 - INFO - Account page accessed by user YX12
-2024-08-08 22:05:07,679 - INFO - Account deleted for user unknown
-2024-08-08 22:05:07,690 - INFO - Home Page Accessed!
-2024-08-08 22:05:28,015 - ERROR - Exception on /account [GET]
+2024-08-12 20:20:51,309 - ERROR - Exception on /payment_details [POST]
 Traceback (most recent call last):
-  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\app.py", line 1473, in wsgi_app
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\base.py", line 1968, in _exec_single_context
+    cursor, str_statement, effective_parameters, context
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\connections.py", line 563, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\connections.py", line 825, in _read_query_result
+    result.read()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\connections.py", line 1199, in read
+    first_packet = self.connection._read_packet()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\connections.py", line 775, in _read_packet
+    packet.raise_for_error()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.DataError: (1406, "Data too long for column 'cvv' at row 1")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\flask\app.py", line 2529, in wsgi_app
     response = self.full_dispatch_request()
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\app.py", line 882, in full_dispatch_request
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\flask\app.py", line 1825, in full_dispatch_request
     rv = self.handle_user_exception(e)
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\app.py", line 880, in full_dispatch_request
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\flask\app.py", line 1823, in full_dispatch_request
     rv = self.dispatch_request()
-         ^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\app.py", line 865, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\App_Security_Proj_Web\cafe_web\Cafecrest\App_Routes.py", line 314, in account
-    user = User.query.filter_by(username=session['username']).first()
-                                         ~~~~~~~^^^^^^^^^^^^
-  File "C:\Users\isaac\Downloads\Year 2 Sem 1\App_Security_Proj_Web\venv\Lib\site-packages\flask\sessions.py", line 84, in __getitem__
-    return super().__getitem__(key)
-           ^^^^^^^^^^^^^^^^^^^^^^^^
-KeyError: 'username'
-2024-08-08 22:05:37,876 - INFO - User logged out
-2024-08-08 22:05:37,883 - INFO - Home Page Accessed!
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\flask\app.py", line 1799, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\flask_limiter\extension.py", line 1298, in __inner
+    return cast(R, flask.current_app.ensure_sync(obj)(*a, **k))
+  File "C:\Users\wayerern\PycharmProjects\App_Security_Proj_Web(loggingfunc)\App_Security_Proj_Web\cafe_web\Cafecrest\App_Routes.py", line 652, in create_payment
+    db.session.commit()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\scoping.py", line 597, in commit
+    return self._proxied.commit()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\session.py", line 2017, in commit
+    trans.commit(_to_root=True)
+  File "<string>", line 2, in commit
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\session.py", line 1302, in commit
+    self._prepare_impl()
+  File "<string>", line 2, in _prepare_impl
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\state_changes.py", line 139, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\session.py", line 1277, in _prepare_impl
+    self.session.flush()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\session.py", line 4341, in flush
+    self._flush(objects)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\session.py", line 4477, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\session.py", line 4437, in _flush
+    flush_context.execute()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\unitofwork.py", line 645, in execute
+    uow,
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\persistence.py", line 98, in save_obj
+    insert,
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\orm\persistence.py", line 1236, in _emit_insert_statements
+    execution_options=execution_options,
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\base.py", line 1421, in execute
+    execution_options or NO_OPTIONS,
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\sql\elements.py", line 516, in _execute_on_connection
+    self, distilled_params, execution_options
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\base.py", line 1650, in _execute_clauseelement
+    cache_hit=cache_hit,
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\base.py", line 1847, in _execute_context
+    dialect, context, statement, parameters
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\base.py", line 1987, in _exec_single_context
+    e, str_statement, effective_parameters, cursor, context
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\base.py", line 2353, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\base.py", line 1968, in _exec_single_context
+    cursor, str_statement, effective_parameters, context
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\sqlalchemy\engine\default.py", line 924, in do_execute
+    cursor.execute(statement, parameters)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\connections.py", line 563, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\connections.py", line 825, in _read_query_result
+    result.read()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\connections.py", line 1199, in read
+    first_packet = self.connection._read_packet()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\connections.py", line 775, in _read_packet
+    packet.raise_for_error()
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "C:\Users\wayerern\AppData\Local\Programs\Python\Python37-32\lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+sqlalchemy.exc.DataError: (pymysql.err.DataError) (1406, "Data too long for column 'cvv' at row 1")
+[SQL: INSERT INTO payment (card_number, expiration_date, cvv, card_name, username) VALUES (%(card_number)s, %(expiration_date)s, %(cvv)s, %(card_name)s, %(username)s)]
+[parameters: {'card_number': b'gAAAAABmuf4jPvJKd8cD-bLJkD903AJeawdmJuejMONL1Y-3rY_35XBJOMm3LYPYVAt2mTgeQ0kZWrXYL6vbp-YG37eIb2eJPdQMkkL34u-c_8ms9eXF6ms=', 'expiration_date': '11/22', 'cvv': b'gAAAAABmuf4japG4dAb3-jc2gsOz1yAvOWaNe8HiTVXjW3z7DihN64rEo6PDUsknsoC9D3NbrIgED6B8XHAtQ5_QzOegfjz2yA==', 'card_name': 'NYU', 'username': 'nga1'}]
+(Background on this error at: https://sqlalche.me/e/20/9h9h)
+2024-08-12 20:26:36,710 - WARNING - User tried to add payment details without being logged in.
+2024-08-12 20:26:36,719 - INFO - Login Page Accessed!

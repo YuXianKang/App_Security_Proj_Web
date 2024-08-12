@@ -22,6 +22,8 @@ from products import food, coffee, non_coffee, all_products
 from Encryption_Payment import encrypt_data, decrypt_data
 from Order_Calculation import *
 from logging_config import configure_logging
+import logging
+from mysql_handler import MySQLHandler
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -45,6 +47,18 @@ new_product = None
 
 configure_logging(app)
 
+# Configure logging
+handler = MySQLHandler(
+    host='localhost',            # Your MySQL host
+    database='cafecrest',    # Your MySQL database name
+    user='cafecrest',        # Your MySQL username
+    password='Oscar1oscar1',    # Your MySQL password
+    table='logs'                 # Your logs table name
+)
+handler.setLevel(logging.INFO)  # Set log level
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
 
 @app.route('/')
 def home():
@@ -687,6 +701,8 @@ def delete_payment(id):
     db.session.delete(payment)
     db.session.commit()
     flash("Payment details deleted successfully", "success")
+    username = escape(session.get("username", ""))
+    app.logger.info(f'Payment with ID {id} deleted successfully by user: {username}')
     return redirect(url_for('retrieve_payment'))
 
 
@@ -1024,6 +1040,8 @@ def success_payment():
     user = User.query.filter_by(username=session["username"]).first()
     if user:
         try:
+            app.logger.info('Starting payment processing for user: %s', user.username)
+
             order_db = shelve.open('order.db', 'r')
             orders = order_db.get('orders', {})
 
@@ -1074,6 +1092,7 @@ def success_payment():
                     order_db['cart'].pop(order_id)
 
             session.pop('started_order_process', None)
+            app.logger.info('Order %s successfully processed and cleared from order_db', order_id)
 
             return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
         except Exception as e:
