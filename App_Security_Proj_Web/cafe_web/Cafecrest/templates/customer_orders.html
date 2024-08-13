@@ -3,7 +3,7 @@
     max-width: 960px;
 }
 
-.table th,.table td {
+.table th, .table td {
     font-size: 1rem;
     vertical-align: top;
 }
@@ -19,10 +19,10 @@
 </style>
 
 {% extends "base.html" %}
-{% block title %} Customer's Order {% endblock %}
+{% block title %} Customer's Orders {% endblock %}
 {% block content %}
 <div class="container mt-5">
-    <h1 class="mb-4">Customer's Order</h1>
+    <h1 class="mb-4">Customer's Orders</h1>
     <div class="table-responsive">
         <table class="table table-striped table-bordered table-hover">
             <thead>
@@ -32,16 +32,24 @@
                     <th>Collection Type</th>
                     <th>Items</th>
                     <th>Grand Total</th>
+                    <th>Order Date</th>
                 </tr>
             </thead>
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td>{{ order.id }}</td>
+                    <td>{{ order.order_id }}</td>
                     <td>{{ order.username }}</td>
-                    <td>{{ order.order_data }}</td>
-                    <td>{{ order.items }}</td>
-                    <td>${{ order.total }}</td>
+                    <td>{{ order.collection_type }}</td>
+                    <td>
+                        <ul>
+                            {% for item in order.items %}
+                            {{ item.item_name }} ({{ item.quantity }}){% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>${{ order.grand_total }}</td>
+                    <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -52,3 +60,4 @@
 
 <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 {% endblock %}
+

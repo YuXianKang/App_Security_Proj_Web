@@ -15,7 +15,6 @@ from App_config import config
 from Account_Lockout import max_attempts, lockout_duration
 import re
 import os
-import shelve
 import uuid
 import requests
 from products import food, coffee, non_coffee, all_products
@@ -700,23 +699,11 @@ def order_collection():
 
     if request.method == 'POST' and collection_Type.validate():
         order_id = str(uuid.uuid4())
-        order_data = {
-            'order_id': order_id,
-            'collection_type': collection_Type.collection_type.data
-        }
+        order = Order(order_id=order_id, collection_type=collection_Type.collection_type.data, username=session["username"])
+        db.session.add(order)
+        db.session.commit()
 
-        with shelve.open('order.db', 'c') as db:
-            orders = db.get('orders', {})
-            orders[order_id] = order_data
-            db['orders'] = orders
-
-        with shelve.open('order.db', 'c') as db:
-            cart = db.get('cart', {})
-            cart[order_id] = []
-            db['cart'] = cart
-
-        app.logger.info('Order collection started for order_id: %s by user: %s', order_id,
-                        session.get('username', 'unknown'))
+        app.logger.info('Order collection started for order_id: %s by user: %s', order_id, session.get('username', 'unknown'))
         return redirect(url_for('show_products'))
 
     app.logger.info('Order collection page accessed by user: %s', session.get('username', 'unknown'))
@@ -728,21 +715,15 @@ def show_products():
     if 'started_order_process' not in session:
         flash("You must start the order process from the order-collection page.", "error")
         return redirect(url_for('order_collection'))
+
     try:
-        with shelve.open('order.db', 'c') as order_db:
-            orders = order_db.get('orders', {})
+        order = Order.query.order_by(Order.id.desc()).first()
+        if not order:
+            app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
+            return render_template('error.html', error_message="Order not found")
 
-            if not orders:
-                app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
-                return render_template('error.html', error_message="Order not found")
-
-            order_id = list(orders.keys())[-1]
-
-            cart = order_db.get('cart', {})
-            order_cart = cart.get(order_id, [])
-
-        app.logger.info('Products page accessed by user: %s for order_id: %s', session.get('username', 'unknown'))
-        return render_template('products.html', food=food, coffee=coffee, non_coffee=non_coffee, cart=order_cart)
+        app.logger.info('Products page accessed by user: %s for order_id: %s', session.get('username', 'unknown'), order.order_id)
+        return render_template('products.html', food=food, coffee=coffee, non_coffee=non_coffee, cart=order.items)
 
     except Exception as e:
         return render_template('error.html', error_message=f"An error occurred: {str(e)}")
@@ -758,49 +739,33 @@ def add_to_cart(product_id):
         flash("Product not found", "error")
         return redirect(url_for('show_products'))
 
-    order_db = shelve.open('order.db', 'r')
-    orders = order_db.get('orders', {})
+    order = Order.query.order_by(Order.id.desc()).first()
 
-    if not orders:
+    if not order:
         app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
         flash("Order not found", "error")
-        order_db.close()
         return redirect(url_for('home'))
 
-    order_id = list(orders.keys())[-1]
-    collection_types = orders[order_id]['collection_type']
-    order_db.close()
-
-    item = {
-        'product_id': product_id,
-        'name': product['name'],
-        'price': product['price'],
-        'quantity': int(request.form['quantity']),
-        'order_id': order_id,
-        'collection_type': collection_type,
-        'image_path': product['image_path']}
+    order_item = OrderItem(
+        order_id=order.order_id,
+        item_name=product['name'],
+        item_price=product['price'],
+        quantity=int(request.form['quantity']),
+        collection_type=order.collection_type,
+        image_path=product['image_path']
+    )
 
     try:
-        cart_db = shelve.open('order.db', 'c')
-        cart = cart_db.get('cart', {})
-        order_cart = cart.get(order_id, [])
-
-        for existing_item in order_cart:
-            if existing_item['name'] == item['name']:
-                existing_item['quantity'] += item['quantity']
-                break
-        else:
-            order_cart.append(item)
-
-        cart[order_id] = order_cart
-        cart_db['cart'] = cart
-        cart_db.close()
+        db.session.add(order_item)
+        db.session.commit()
 
         flash("Product added to cart successfully", "success")
         return redirect(url_for('show_products'))
 
-    except:
+    except Exception as e:
+        db.session.rollback()
         flash("An error occurred while adding the product to your cart. Please try again later.", "error")
+        app.logger.error(f"Error adding product to cart: {str(e)}")
         return redirect(url_for('home'))
 
 
@@ -819,50 +784,41 @@ def view_cart():
         return redirect(url_for('order_collection'))
 
     try:
-        with shelve.open('order.db', 'r') as order_db:
-            orders = order_db.get('orders', {})
+        order = Order.query.order_by(Order.id.desc()).first()
 
-            if not orders:
-                return "Order not found"
+        if not order:
+            return "Order not found"
 
-            order_id = list(orders.keys())[-1]
-            collection_types = orders[order_id]['collection_type']
+        order_items = order.items
 
-            cart = order_db.get('cart', {})
+        subtotal = calculate_subtotal(order_items)
+        sales_tax = calculate_sales_tax(subtotal)
+        delivery_amount = calculate_delivery_amount(order.collection_type)
+        grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, order.collection_type)
 
-            order_cart = cart.get(order_id, [])
-
-            subtotal = calculate_subtotal(order_cart)
-            sales_tax = calculate_sales_tax(subtotal)
-            delivery_amount = calculate_delivery_amount(collection_types)
-            grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_types)
-
-        return render_template('view_cart.html', cart=order_cart, subtotal=subtotal, sales_tax=sales_tax,
+        return render_template('view_cart.html', cart=order_items, subtotal=subtotal, sales_tax=sales_tax,
                                delivery_amount=delivery_amount, grand_total=grand_total)
 
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
 
-@app.route('/update_cart_item/<product_id>', methods=['POST', 'GET'])
+@app.route('/update_cart_item/<int:item_id>', methods=['POST', 'GET'])
 @limiter.limit("10/minute")
-def update_cart_item(product_id):
+def update_cart_item(item_id):
     try:
-        order_db = shelve.open('order.db', 'r')
-        orders = order_db.get('orders', {})
+        order = Order.query.order_by(Order.id.desc()).first()
 
-        if not orders:
+        if not order:
             app.logger.warning('Order not found for user: %s', session.get('username', 'unknown'))
             flash("Order not found", "error")
-            order_db.close()
             return redirect(url_for('home'))
 
-        order_id = list(orders.keys())[-1]  # Assuming you want the latest order
-        order_db.close()
+        order_item = OrderItem.query.get(item_id)
 
-        if not order_id:
-            app.logger.warning('Order ID not found for user: %s', session.get('username', 'unknown'))
-            flash("Order not found", "error")
+        if not order_item:
+            app.logger.warning('Order item not found for user: %s', session.get('username', 'unknown'))
+            flash("Order item not found", "error")
             return redirect(url_for('home'))
 
         new_quantity = request.form.get('quantity', '0')
@@ -872,47 +828,34 @@ def update_cart_item(product_id):
             flash("Invalid quantity value", "error")
             return redirect(url_for('view_cart'))
 
-        cart_db = shelve.open('order.db', 'c')
-        cart = cart_db.get('cart', {})
-
-        for item in cart.get(order_id, []):
-            if item['product_id'] == product_id:
-                item['quantity'] = new_quantity
-
-        cart_db['cart'] = cart
-        cart_db.close()
+        order_item.quantity = new_quantity
+        db.session.commit()
 
     except Exception as e:
+        db.session.rollback()
         return f"An error occurred: {str(e)}"
 
     return redirect(url_for('view_cart'))
 
 
-@app.route('/remove_from_cart/<product_id>', methods=['POST'])
+@app.route('/remove_from_cart/<int:item_id>', methods=['POST'])
 @limiter.limit("10/minute")
-def remove_from_cart(product_id):
+def remove_from_cart(item_id):
     try:
-        with shelve.open('order.db', 'r') as order_db:
-            orders = order_db.get('orders', {})
+        order_item = OrderItem.query.get(item_id)
 
-            if not orders:
-                return redirect(url_for('home'))
-
-            order_id = list(orders.keys())[-1]
-
-        if not order_id:
+        if not order_item:
+            app.logger.warning('Order item not found for user: %s', session.get('username', 'unknown'))
+            flash("Order item not found", "error")
             return redirect(url_for('home'))
 
-        with shelve.open('order.db', 'c') as cart_db:
-            cart = cart_db.get('cart', {})
-            new_cart = [item for item in cart.get(order_id, []) if item.get('product_id') != product_id]
-
-            cart[order_id] = new_cart
-            cart_db['cart'] = cart
+        db.session.delete(order_item)
+        db.session.commit()
 
         return redirect(url_for('view_cart'))
 
     except Exception as e:
+        db.session.rollback()
         return f"An error occurred: {str(e)}"
 
 
@@ -1004,18 +947,6 @@ def submit_payment():
                 flash('Payment processed successfully.', 'success')
                 return redirect(url_for('success_payment'))
 
-            if payment_detail:
-                with shelve.open('order.db', 'r') as order_db:
-                    orders = order_db.get('orders', {})
-
-                    if not orders:
-                        flash("Order not found", "error")
-                        return redirect(url_for('home'))
-
-                    order_id = list(orders.keys())[-1]
-
-                return redirect(url_for('success_payment'))
-
         except Exception as e:
             flash(f"An error occurred: {str(e)}", "error")
 
@@ -1028,62 +959,46 @@ def success_payment():
         try:
             app.logger.info('Starting payment processing for user: %s', user.username)
 
-            order_db = shelve.open('order.db', 'r')
-            orders = order_db.get('orders', {})
+            order = Order.query.order_by(Order.id.desc()).first()
 
-            if not orders:
+            if not order:
                 flash("Order not found", "error")
-                order_db.close()
                 return redirect(url_for('home'))
 
-            order_id = list(orders.keys())[-1]
+            order_items = order.items
 
-            order_data = orders.get(order_id)
-            port = order_data
-            collection_type = order_data['collection_type']
-
-            cart_db = shelve.open('order.db', 'r')
-            order_cart = cart_db.get('cart', {}).get(order_id, [])
-            cart_db.close()
-
-            subtotal = calculate_subtotal(order_cart)
+            subtotal = calculate_subtotal(order_items)
             sales_tax = calculate_sales_tax(subtotal)
-            delivery_amount = calculate_delivery_amount(collection_type)
-            grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, collection_type)
+            delivery_amount = calculate_delivery_amount(order.collection_type)
+            grand_total = calculate_grand_total(subtotal, sales_tax, delivery_amount, order.collection_type)
 
             grand_total_cents = int(grand_total * 100)
             points_earned = 5 * (grand_total_cents // 100)
-
-            extracted_items = []
-            for item in order_cart:
-                extracted_items.append({item['name'], item['quantity']})
-            itemize_json = str(extracted_items).replace("'", '"')
-
-            new_order = Order(username=session["username"], id=order_id, order_data=port['collection_type'], items=itemize_json, total=grand_total)
-            db.session.add(new_order)
-            db.session.commit()
 
             user_points_record = UserPoints.query.filter_by(username=user.username).first()
             if user_points_record:
                 user_points_record.points += points_earned
             else:
-                new_points_record = UserPoints(username=user.username, points=points_earned)
-                db.session.add(new_points_record)
+                db.session.add(UserPoints(username=user.username, points=points_earned))
             db.session.commit()
 
-            with shelve.open('order.db', 'c', writeback=True) as order_db:
-                if 'orders' in order_db:
-                    order_db['orders'].pop(order_id)
-                if 'cart' in order_db:
-                    order_db['cart'].pop(order_id)
+            order.grand_total = grand_total
+            db.session.commit()
 
             session.pop('started_order_process', None)
-            app.logger.info('Order %s successfully processed and cleared from order_db', order_id)
+            app.logger.info('Order %s successfully processed and cleared from database', order.order_id)
 
-            return render_template('success_payment.html', order_id=order_id, order_data=order_data, grand_total=grand_total, collection_type=collection_type, order_cart=order_cart, points_earned=points_earned)
+            return render_template('success_payment.html', order_id=order.order_id, order_data=order.collection_type, grand_total=grand_total, collection_type=order.collection_type, order_cart=order_items, points_earned=points_earned)
+
         except Exception as e:
+            db.session.rollback()
             app.logger.error(f"An unexpected error occurred: {str(e)}", exc_info=True)
             flash("An unexpected error occurred. Please try again later.", "error")
+            return redirect(url_for('home'))
+
+    else:
+        flash("User not found", "error")
+        return redirect(url_for('home'))
 
 
 @app.route('/orderHistory', methods=["GET"])
@@ -1106,7 +1021,8 @@ def customer_order():
                            session.get('username', 'unknown'))
         return "Access Denied. This feature requires staff & admin level access!", 403
 
-    orders = Order.query.all()
+    orders = Order.query.order_by(Order.created_at.desc()).all()
+
     return render_template('customer_orders.html', orders=orders)
 
 

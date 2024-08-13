@@ -107,14 +107,29 @@ class Feed_back(db.Model):
 
 
 class Order(db.Model):
-    id = db.Column(db.String(64), primary_key=True)
-    username = db.Column(db.String(20), nullable=False)
-    order_data = db.Column(db.String(120), nullable=False)
-    items = db.Column(db.String(500), nullable=False)
-    total = db.Column(db.Float, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(36), unique=True, nullable=False)
+    username = db.Column(db.String(50), db.ForeignKey('user.username'), nullable=False)
+    collection_type = db.Column(db.String(50), nullable=False)
+    items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
+    grand_total = db.Column(db.Float, nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.now())
 
     def __repr__(self):
-        return f"Order('{self.items}')"
+        return f'<Order {self.order_id}>'
+
+
+class OrderItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(36), db.ForeignKey('order.order_id'), nullable=False)
+    item_name = db.Column(db.String(100), nullable=False)
+    item_price = db.Column(db.Float, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    collection_type = db.Column(db.String(50), nullable=False)
+    image_path = db.Column(db.String(255))
+
+    def __repr__(self):
+        return f'<OrderItem {self.item_name} (Order {self.order_id})>'
 
 
 class UserPoints(db.Model):

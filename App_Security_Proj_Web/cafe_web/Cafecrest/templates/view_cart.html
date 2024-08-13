@@ -21,16 +21,16 @@
                 <tr>
                     <td>{{ item.name }}</td>
                     <td>
-                        <form method="POST" action="{{ url_for('update_cart_item', product_id=item.product_id) }}">
+                        <form method="POST" action="{{ url_for('update_cart_item', item_id=item.id) }}">
                             <span>{{ item.quantity }}</span>
                             <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99" class="form-control form-control-sm">
                             <button type="submit" value='Update' class="btn btn-warning btn-sm mt-1">Update Quantity</button>
                         </form>
                     </td>
-                    <td>${{ item.price }}</td>
-                    <td>${{ item.price * item.quantity }}</td>
+                    <td>${{ item.item_price }}</td>
+                    <td>${{ item.item_price * item.quantity }}</td>
                     <td>
-                       <form method="POST" action="{{ url_for('remove_from_cart', product_id=item.product_id) }}" onsubmit="return confirm('Are you sure you want to remove this item from the cart?');">
+                       <form method="POST" action="{{ url_for('remove_from_cart', item_id=item.id) }}" onsubmit="return confirm('Are you sure you want to remove this item from the cart?');">
                            <button type="submit" value="Remove" class="btn btn-danger btn-sm">Remove</button>
                        </form>
                     </td>
@@ -50,11 +50,11 @@
         <a href="{{ url_for('show_products') }}" class="btn btn-primary">Add More Items</a>
         <a href="{{ url_for('payment_page') }}" class="btn btn-success ml-2">Proceed to Payment</a>
     </div>
-{% else %}
+    {% else %}
     <p class="text-center">Your cart is empty.</p>
     <div class="text-left mt-4">
         <a href="{{ url_for('show_products') }}" class="btn btn-primary">Add More Items</a>
     </div>
-{% endif %}
+    {% endif %}
 </div>
 {% endblock %}
