@@ -758,6 +758,7 @@ def add_to_cart(product_id):
     try:
         db.session.add(order_item)
         db.session.commit()
+        app.logger.info('Product added to cart successfully: %s, Order ID: %s', product_id, order.order_id)
 
         flash("Product added to cart successfully", "success")
         return redirect(url_for('show_products'))
@@ -830,9 +831,12 @@ def update_cart_item(item_id):
 
         order_item.quantity = new_quantity
         db.session.commit()
+        app.logger.info('Cart item updated (item_id: %d) for user: %s', item_id, session.get('username', 'unknown'))
 
     except Exception as e:
         db.session.rollback()
+        app.logger.error('Error updating cart item (item_id: %d) for user: %s, Exception: %s', item_id,
+                         session.get('username', 'unknown'), str(e))
         return f"An error occurred: {str(e)}"
 
     return redirect(url_for('view_cart'))
@@ -851,12 +855,14 @@ def remove_from_cart(item_id):
 
         db.session.delete(order_item)
         db.session.commit()
+        app.logger.info('Order item removed (item_id: %d) for user: %s', item_id, session.get('username', 'unknown'))
 
         return redirect(url_for('view_cart'))
 
     except Exception as e:
         db.session.rollback()
         return f"An error occurred: {str(e)}"
+
 
 
 @app.route('/payment', methods=['GET', 'POST'])
@@ -890,9 +896,10 @@ def payment_page():
                 formatted_card_number = f"**** **** **** {decrypted_card_num[-4:]}"
                 payment_details_list.append({
                     'id': payment.id, 'card_number': formatted_card_number, 'expiration_date': payment.expiration_date, 'cvv': payment.cvv, 'card_name': payment.card_name})
-
+            app.logger.info('Payment details displayed for user: %s', session.get('username', 'unknown'))
             return render_template('payment.html', payment_details_list=payment_details_list, has_payment_details=True)
     else:
+        app.logger.warning('User not found while accessing payment page')
         return redirect(url_for('/'))
 
 
@@ -918,6 +925,8 @@ def submit_payment():
                 encrypted_cvv = encrypt_data(cvv)
 
                 if not (card_number and expiration_date and cvv and card_name):
+                    app.logger.warning('Incomplete payment details provided by user: %s',
+                                       session.get('username', 'unknown'))
                     flash("Please provide all required card details", "error")
                     return redirect(url_for('payment_page'))
 
@@ -926,12 +935,16 @@ def submit_payment():
                 db.session.add(new_payment)
                 db.session.commit()
 
+                app.logger.info('New payment details added successfully for user: %s',
+                                session.get('username', 'unknown'))
                 flash('New payment details added successfully.', 'success')
                 return redirect(url_for('success_payment'))
 
             elif payment_detail:
                 selected_payment = Payment.query.get(payment_detail)
                 if not selected_payment:
+                    app.logger.warning('Selected payment not found (payment_id: %s) for user: %s', payment_detail,
+                                       session.get('username', 'unknown'))
                     flash("Selected payment not found.", "error")
                     return redirect(url_for('payment_page'))
 
