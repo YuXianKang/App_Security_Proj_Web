@@ -42,11 +42,25 @@
         text-align: center;
         margin-top: 1rem;
     }
+
+    .error-message {
+    color: red;
+    font-size: 0.8rem;
+    margin-top: -0.5rem;
+    margin-bottom: 0.5rem;
+}
+.valid {
+    border: 2px solid green;
+}
+.invalid {
+    border: 2px solid red;
+}
 </style>
 
 <div class="login-centered">
     <form method="POST" id="login">
-        <input type="text" name="username" placeholder="Username" required>
+        <input type="text" name="username" id="username" placeholder="Username" required>
+<div class="error-message" id="username-error"></div>
         <input type="password" name="password" placeholder="Password" required>
         <div class="g-recaptcha" data-sitekey="6LdKdRcqAAAAAH8hbSx1-fPVrtAV7r5gfnPWlT9g"></div>
         <button type="submit">Login</button>
@@ -65,6 +79,30 @@
 
 {% if lockout_time %}
 <script>
+    function validateInput(inputElement, errorElementId, pattern, errorMessage) {
+    const inputValue = inputElement.value;
+    const errorElement = document.getElementById(errorElementId);
+
+    if (pattern.test(inputValue)) {
+        inputElement.classList.add('valid');
+        inputElement.classList.remove('invalid');
+        errorElement.textContent = '';
+        return true;
+    } else {
+        inputElement.classList.add('invalid');
+        inputElement.classList.remove('valid');
+        errorElement.textContent = errorMessage;
+        return false;
+    }
+}
+
+document.getElementById('username').addEventListener('input', function() {
+    const pattern = /^[a-zA-Z0-9_]+$/;
+    const errorMessage = 'Username can only contain letters, numbers, and underscores.';
+    validateInput(this, 'username-error', pattern, errorMessage);
+});
+
+
     let lockoutTime = {{ lockout_time }};
     const flashMessageDiv = document.getElementById('flash-message');
 

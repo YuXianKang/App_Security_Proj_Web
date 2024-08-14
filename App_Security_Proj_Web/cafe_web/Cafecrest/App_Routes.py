@@ -312,13 +312,18 @@ def login():
         password = request.form.get('password')
 
         user = User.query.filter_by(username=username).first()
-        if user:
-            if user.lockout_time and datetime.now() < user.lockout_time:
-                remaining_time = (user.lockout_time - datetime.now()).seconds // 60
-                username = escape(session.get("username", ""))
-                app.logger.warning(f'user: {username} attempted login while locked out. Remaining time: {remaining_time} minutes')
-                flash(f'Too many failed login attempts. Please try again in {remaining_time} minutes.')
-                return render_template('Login.html')
+
+        if user is None:
+            app.logger.warning(f'Login attempt with invalid username: {username}')
+            flash('Invalid username or password. Please try again.')
+            return render_template('Login.html')
+
+        if user.lockout_time and datetime.now() < user.lockout_time:
+            remaining_time = (user.lockout_time - datetime.now()).seconds // 60
+            username = escape(session.get("username", ""))
+            app.logger.warning(f'user: {username} attempted login while locked out. Remaining time: {remaining_time} minutes')
+            flash(f'Too many failed login attempts. Please try again in {remaining_time} minutes.')
+            return render_template('Login.html')
 
         if check_password_hash(user.password, password):
             user.login_attempts = 0
