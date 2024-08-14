@@ -597,7 +597,7 @@ def view_points():
 
 
 @app.route('/createProduct', methods=['GET', 'POST'])
-@limiter.limit("5/minute")
+# @limiter.limit("5/minute")
 def create_product():
     if session.get('role') == 'user':
         return "Access Denied. This feature requires staff & admin level access!", 403
@@ -613,7 +613,8 @@ def create_product():
             flash('No selected file', 'error')
             return redirect(url_for('create_product'))
 
-        if file:
+        # Check if the file is allowed
+        if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
@@ -632,9 +633,9 @@ def create_product():
 
             flash('Product created successfully!', 'success')
             return redirect(url_for('retrieve_product'))
-
-        flash('File upload failed', 'error')
-        return redirect(url_for('create_product'))
+        else:
+            flash('Invalid file type. Only PNG, JPG, JPEG, and GIF files are allowed.', 'error')
+            return redirect(url_for('create_product'))
 
     return render_template('createProduct.html', form=create_product_form)
 

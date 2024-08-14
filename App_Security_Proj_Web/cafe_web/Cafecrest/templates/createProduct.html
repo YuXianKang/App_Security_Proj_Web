@@ -5,6 +5,16 @@
 {% block content %}
 {% from "includes/_formHelper.html" import render_field %}
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul>
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+
 <h1 class="display-4">Add a product</h1>
 <form method="POST" action="{{ url_for('create_product') }}" enctype="multipart/form-data">
   <div class="form-group">
