@@ -19,7 +19,7 @@
     width: 100%;
   }
 
- .div {
+  .div {
     width: 30%;
     height: 40%;
     margin: auto;
@@ -29,7 +29,7 @@
     text-align: center;
   }
 
- .signup-centered {
+  .signup-centered {
     padding-top: 3rem;
     width: 40%;
     margin: auto;
@@ -57,35 +57,98 @@
   .strength-strong {
     color: green;
   }
+  .valid {
+    border: 2px solid green;
+  }
+  .invalid {
+    border: 2px solid red;
+  }
+  .error-message {
+    color: red;
+    font-size: 0.8rem;
+    margin-top: -0.5rem;
+    margin-bottom: 0.5rem;
+  }
 </style>
 
 <div class="signup-centered">
   <form method="POST" id="signup">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="text" name="firstn" placeholder="First Name" required>
-    <input type="text" name="lastn" placeholder="Last Name" required>
-    <input type="tel" name="mobile" placeholder="Mobile Number" pattern="[89]\d{7}" required>
-    <input type="email" name="email" placeholder="Email" required>
+    <input type="text" name="username" id="username" placeholder="Username" required>
+    <div class="error-message" id="username-error"></div>
+
+    <input type="text" name="firstn" id="firstn" placeholder="First Name" required>
+    <div class="error-message" id="firstn-error"></div>
+
+    <input type="text" name="lastn" id="lastn" placeholder="Last Name" required>
+    <div class="error-message" id="lastn-error"></div>
+
+    <input type="tel" name="mobile" id="mobile" placeholder="Mobile Number" required>
+    <div class="error-message" id="mobile-error"></div>
+
+    <input type="email" name="email" id="email" placeholder="Email" required>
+    <div class="error-message" id="email-error"></div>
+
     <input type="password" name="password" id="password" placeholder="Password" required>
     <div class="password-hint">
       Password must be at least 8 characters, contain an uppercase letter, a lowercase letter, a number, and a special character.
     </div>
     <div class="password-strength" id="password-strength"></div>
+    <div class="error-message" id="password-error"></div>
+
     <button type="submit">Create Staff Account</button>
   </form>
 </div>
 
 <script>
+  function validateInput(inputElement, errorElementId, pattern, errorMessage) {
+    const inputValue = inputElement.value;
+    const errorElement = document.getElementById(errorElementId);
+
+    if (pattern.test(inputValue)) {
+      inputElement.classList.add('valid');
+      inputElement.classList.remove('invalid');
+      errorElement.textContent = '';
+      return true;
+    } else {
+      inputElement.classList.add('invalid');
+      inputElement.classList.remove('valid');
+      errorElement.textContent = errorMessage;
+      return false;
+    }
+  }
+
+  ['username', 'firstn', 'lastn', 'mobile', 'email'].forEach(field => {
+    document.getElementById(field).addEventListener('input', function() {
+      const fieldPatternMap = {
+        username: /^[a-zA-Z0-9_]+$/,
+        firstn: /^[a-zA-Z]+$/,
+        lastn: /^[a-zA-Z]+$/,
+        mobile: /^[89]\d{7}$/,
+        email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      };
+      const errorMessages = {
+        username: 'Username can only contain letters, numbers, and underscores.',
+        firstn: 'First name can only contain letters.',
+        lastn: 'Last name can only contain letters.',
+        mobile: 'Mobile number can only contain digits and must be 8 digits long starting with 8 or 9.',
+        email: 'Invalid email address.'
+      };
+      validateInput(this, `${field}-error`, fieldPatternMap[field], errorMessages[field]);
+    });
+  });
+
+  // Specific validation for password
   document.getElementById('password').addEventListener('input', function() {
-    const password = this.value;
+    const passwordError = document.getElementById('password-error');
+    const strengthDisplay = document.getElementById('password-strength');
     let strength = 'Weak';
     let strengthClass = 'strength-weak';
 
-    if (password.length >= 8) {
-      const hasUpperCase = /[A-Z]/.test(password);
-      const hasLowerCase = /[a-z]/.test(password);
-      const hasNumbers = /[0-9]/.test(password);
-      const hasSpecialChars = /[\W_]/.test(password);
+    if (this.value.length >= 8) {
+      const hasUpperCase = /[A-Z]/.test(this.value);
+      const hasLowerCase = /[a-z]/.test(this.value);
+      const hasNumbers = /[0-9]/.test(this.value);
+      const hasSpecialChars = /[\W_]/.test(this.value);
 
       if (hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars) {
         strength = 'Strong';
@@ -96,9 +159,18 @@
       }
     }
 
-    const strengthDisplay = document.getElementById('password-strength');
-    strengthDisplay.textContent = Password strength: ${strength};
-    strengthDisplay.className = password-strength ${strengthClass};
+    strengthDisplay.textContent = `Password strength: ${strength}`;
+    strengthDisplay.className = `password-strength ${strengthClass}`;
+
+    if (strength === 'Strong') {
+      this.classList.add('valid');
+      this.classList.remove('invalid');
+      passwordError.textContent = '';
+    } else {
+      this.classList.add('invalid');
+      this.classList.remove('valid');
+      passwordError.textContent = 'Password does not meet the requirements.';
+    }
   });
 </script>
 

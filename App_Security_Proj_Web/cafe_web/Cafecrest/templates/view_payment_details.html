@@ -90,7 +90,6 @@
                     <td>{{ payment_detail.cvv }}</td>
                     <td>{{ payment_detail.card_name }}</td>
                     <td>
-                        <a href="/update_payment/{{payment_detail.id}}" class="btn btn-warning btn-warm">Update</a>
                         <form action="{{ url_for('delete_payment', id=payment_detail.id) }}" method="POST">
                             <input type="submit" value="Delete" class="btn btn-danger btn-delete" onclick="return confirm('Are you sure you want to delete {{payment_detail.card_number}} card details?');">
                         </form>

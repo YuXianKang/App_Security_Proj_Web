@@ -22,3 +22,8 @@ with shelve.open('order.db', 'r') as order_db:
                 print(f"    {item}")
     else:
         print("No items in the cart.")
+
+Delete = input('Wanna Delete All Stored Data? y/n: ')
+if Delete == 'y':
+    with shelve.open('order.db', 'w') as order_db:
+        order_db.clear()

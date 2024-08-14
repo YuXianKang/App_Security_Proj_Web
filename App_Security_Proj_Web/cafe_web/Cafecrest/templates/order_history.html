@@ -34,18 +34,22 @@
                     <th>#</th>
                     <th>Order ID</th>
                     <th>Collection Type</th>
-                    <th>Items</th>
+                    <th>Items & Quantity</th>
                     <th>Grand Total</th>
                 </tr>
             </thead>
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td></td>
-                    <td>{{ order.id }}</td>
-                    <td>{{ order.order_data }}</td>
-                    <td>{{ order.items }}</td>
-                    <td>${{ order.total }}</td>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ order.order_id }}</td>
+                    <td>{{ order.collection_type }}</td>
+                    <td>
+                        {% for item in order.items %}
+                        {{ item.item_name }} ({{ item.quantity }}){% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>${{ order.grand_total }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -56,3 +60,4 @@
 
 <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 {% endblock %}
+
