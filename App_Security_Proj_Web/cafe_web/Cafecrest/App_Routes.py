@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import and_
 from markupsafe import escape
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -1018,7 +1019,7 @@ def success_payment():
 @limiter.limit("10/minute")
 def order_history():
     username = session.get('username')
-    orders = Order.query.filter_by(username=username).all()
+    orders = Order.query.filter(and_(Order.username == username, Order.grand_total.isnot(None))).all()
 
     if orders:
         return render_template('order_history.html', orders=orders, username=username)
@@ -1034,7 +1035,7 @@ def customer_order():
                            session.get('username', 'unknown'))
         return "Access Denied. This feature requires staff & admin level access!", 403
 
-    orders = Order.query.order_by(Order.created_at.desc()).all()
+    orders = Order.query.filter(Order.grand_total.isnot(None)).order_by(Order.created_at.desc()).all()
 
     return render_template('customer_orders.html', orders=orders)
 
