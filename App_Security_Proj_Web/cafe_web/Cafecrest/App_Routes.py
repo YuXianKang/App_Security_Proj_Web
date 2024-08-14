@@ -1056,12 +1056,22 @@ def chat_bot_message():
     return jsonify({"response": response_message})
 
 
+
 @app.route('/createFeedback', methods=['GET', 'POST'])
 @limiter.limit("5/minute")
 def create_feedback():
     create_feedback_form = CreateFeedbackForm(request.form)
     if request.method == 'POST' and create_feedback_form.validate():
-        new_feedback = Feed_back(name=create_feedback_form.name.data, mobile_no=create_feedback_form.mobile_no.data, service=create_feedback_form.service.data, food=create_feedback_form.food.data, feedback=create_feedback_form.feedback.data)
+        create_feedback_form.sanitize_fields()
+
+        # Create a new feedback instance with sanitized data
+        new_feedback = Feed_back(
+            name=create_feedback_form.name.data,
+            mobile_no=create_feedback_form.mobile_no.data,
+            service=create_feedback_form.service.data,
+            food=create_feedback_form.food.data,
+            feedback=create_feedback_form.feedback.data
+        )
 
         db.session.add(new_feedback)
         db.session.commit()
@@ -1069,16 +1079,16 @@ def create_feedback():
         return redirect(url_for('contact_us'))
     return render_template('createFeedback.html', form=create_feedback_form)
 
-
 @app.route('/retrieveFeedback')
 @limiter.limit("3/minute")
 def retrieve_feedback():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
 
-    feedbacks = Feed_back.query.all()  # Call the all() method
+    feedbacks = Feed_back.query.all()
     feedbacks_list = []
 
+    # Compile a list of feedback dictionaries for rendering
     for feedback in feedbacks:
         feedbacks_list.append({
             'id': feedback.id,
