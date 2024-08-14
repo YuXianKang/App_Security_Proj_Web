@@ -31,6 +31,71 @@ app.register_blueprint(errors_bp)
 limiter = Limiter(key_func=get_remote_address, app=app)
 
 
+@app.after_request
+def add_csp_header(response):
+    csp = {
+        "default-src": "'self'",
+        "script-src": [
+            "'self'",
+            "https://code.jquery.com",
+            "https://cdnjs.cloudflare.com",
+            "https://cdn.jsdelivr.net",
+            "https://www.google.com",
+            "https://www.gstatic.com",
+            "https://kit.fontawesome.com",
+            "'unsafe-inline'",
+        ],
+        "style-src": [
+            "'self'",
+            "https://fonts.googleapis.com",
+            "https://cdnjs.cloudflare.com",
+            "https://cdn.jsdelivr.net",
+            "'unsafe-inline'",
+        ],
+        "img-src": [
+            "'self'",
+            "data:",
+            "https://images.unsplash.com",
+            "https://images.pexels.com",
+            "https://img.bestrecipes.com.au",
+            "https://img.kidspot.com.au",
+            "https://coffeeabros.com",
+            "https://www.recipegirl.com",
+            "https://www.imperialsugar.com",
+            "https://cdn.buttercms.com",
+            "https://www.tastingtable.com",
+            "https://feelgoodfoodie.net",
+            "https://images.immediate.co.uk",
+            "https://coffeebros.com/cdn/shop/articles/unnamed_be2775a1-186d-40c1-b094-488fa5fa4050.png",  # Removed the query parameter
+            "https://images.ctfassets.net/v601h1fyjgba/7cdNOhfEauvOFDfJx91p68/487c04ddacbc8228af9f852eea022397/Iced_Mocha_Hazelnut_Caffe.jpg",
+            "https://images.ctfassets.net/v601h1fyjgba/1vlXSpBbgUo9yLzh71tnOT/a1afdbe54a383d064576b5e628035f04/Iced_Americano.jpg"
+        ],
+        "font-src": [
+            "'self'",
+            "https://fonts.googleapis.com",
+            "https://fonts.gstatic.com",
+        ],
+        "connect-src": [
+            "'self'",
+        ],
+        "media-src": "'self'",
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'self'",
+        "frame-src": [
+            "'self'",
+            "https://www.google.com",
+        ],
+        "frame-ancestors": "'none'",
+        "upgrade-insecure-requests": "",
+    }
+
+    csp_directive = "; ".join([f"{k} {' '.join(v) if isinstance(v, list) else v}" for k, v in csp.items()])
+    response.headers['Content-Security-Policy'] = csp_directive
+
+    return response
+
+
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -49,6 +114,9 @@ configure_logging(app)
 
 @app.route('/')
 def home():
+    if 'started_order_process' in session:
+        session.pop('started_order_process', None)
+
     app.logger.info('Home Page Accessed!')
     return render_template('home.html')
 
@@ -464,6 +532,9 @@ def customer_portal():
         flash('You must be logged in to view your account portal', 'danger')
         return redirect(url_for('login'))
 
+    if 'started_order_process' in session:
+        session.pop('started_order_process', None)
+
     user = User.query.filter_by(username=session['username']).first()
 
     if user:
@@ -697,13 +768,14 @@ def delete_payment(id):
 @limiter.limit("10/minute")
 def order_collection():
     collection_Type = collection_type(request.form)
-    session['started_order_process'] = True
 
     if request.method == 'POST' and collection_Type.validate():
         order_id = str(uuid.uuid4())
         order = Order(order_id=order_id, collection_type=collection_Type.collection_type.data, username=session["username"])
         db.session.add(order)
         db.session.commit()
+
+        session['started_order_process'] = True
 
         app.logger.info('Order collection started for order_id: %s by user: %s', order_id, session.get('username', 'unknown'))
         return redirect(url_for('show_products'))
@@ -714,7 +786,7 @@ def order_collection():
 
 @app.route('/products', endpoint='show_products')
 def show_products():
-    if 'started_order_process' not in session:
+    if 'started_order_process' not in session or not session['started_order_process']:
         flash("You must start the order process from the order-collection page.", "error")
         return redirect(url_for('order_collection'))
 
@@ -780,7 +852,7 @@ def view_cart():
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
 
-    if 'started_order_process' not in session:
+    if 'started_order_process' not in session or not session['started_order_process']:
         app.logger.warning('Attempt to view cart without starting order process by user: %s',
                            session.get('username', 'unknown'))
         flash("You must start the order process from the order-collection page.", "error")
@@ -876,7 +948,7 @@ def payment_page():
         flash('You must be logged in to add payment details.', 'danger')
         return redirect(url_for('login'))
 
-    if 'started_order_process' not in session:
+    if 'started_order_process' not in session or not session['started_order_process']:
         flash("You must start the order process from the order-collection page.", "error")
         return redirect(url_for('order_collection'))
 

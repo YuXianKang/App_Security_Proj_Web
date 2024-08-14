@@ -19,7 +19,7 @@
         <tbody>
             {% for item in cart %}
                 <tr>
-                    <td>{{ item.name }}</td>
+                    <td>{{ item.item_name }}</td>
                     <td>
                         <form method="POST" action="{{ url_for('update_cart_item', item_id=item.id) }}">
                             <span>{{ item.quantity }}</span>
