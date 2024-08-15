@@ -1,68 +1,87 @@
 {% extends "base.html" %}
-{% block title %}CafeCrest - ChatBot{% endblock %}
+{% block title %}CafeCrest ChatBot{% endblock %}
 
 {% block content %}
 <style>
-   .message {
-        padding: 5px 10px;
-        margin: 5px;
+    .chat-container {
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #ccc;
         border-radius: 10px;
-        display: inline-block;
-        max-width: 80%;
-        clear: both;
-    }
-   .user {
-        background-color: #dcf8c6;
-        margin-right: 20px;
-        text-align: right;
-        float: right;
-    }
-   .bot {
-        background-color: #f0f0f0;
-        margin-left: 20px;
-        text-align: left;
-        float: left;
-    }
-    #chatbox {
-        border: 10px solid #b0926a;
-        padding: 10px;
-        margin: 10px 0;
-        height: 300px;
-        width: 400px;
-        overflow-y: scroll;
-    }
-   .user-message {
-        align-self: flex-end;
-        background-color: #dcf8c6;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
     }
 
-   .bot-message {
+    .chat-header {
+        background-color: #8b5e3c; /* Darker shade of brown */
+        color: #fff;
+        padding: 10px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    #chatbox {
+        height: 400px;
+        overflow-y: scroll;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message {
+        max-width: 70%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        word-wrap: break-word;
+    }
+
+    .user {
+        background-color: #f5e8d0; /* Light beige */
+        align-self: flex-end;
+        margin-right: 10px;
+    }
+
+    .bot {
+        background-color: #f0f0f0; /* Light gray */
         align-self: flex-start;
-        background-color: #f0f0f0;
+        margin-left: 10px;
+    }
+
+    .chat-input {
+        display: flex;
+        padding: 10px;
+        background-color: #f5f5f5;
     }
 
     #userInput {
-        width: 69%;
-    }
-    #sendButton {
-        width: 10%;
-    }
-    h2 {
-        font-size: 60px;
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
     }
 
-   .chatbot-centered {
-        width: 40%;
-        margin: auto;
+    #sendButton {
+        margin-left: 10px;
+        padding: 10px 20px;
+        background-color: #8b5e3c; /* Darker shade of brown */
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
     }
 </style>
 
-
-<div class="chatbot-centered">
-    <h2 class="display-4">Chatbot</h2>
+<div class="chat-container">
+    <div class="chat-header">BaristaBot</div>
     <div id="chatbox"></div>
-    <input type="text" id="userInput" placeholder="Type a message...">
-    <button id="sendButton">Send</button>
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Type a message...">
+        <button id="sendButton">Send</button>
+    </div>
 </div>
 
 <script>

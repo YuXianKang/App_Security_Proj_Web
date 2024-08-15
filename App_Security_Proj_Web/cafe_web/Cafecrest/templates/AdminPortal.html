@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .admin_portal_margin {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 3vw;
+        margin-bottom: 3vw;
+    }
+
+    .admin_portal_margins {
+        text-align: center;
+        margin-bottom: 2vw;
+    }
+
+    .name_div {
+        width: 30vw;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        background: #FFF;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2vw;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .name_div_secondary {
+        width: 100%;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        background: #F4DFC8;
+        padding: 1vw;
+        margin-top: 2vw;
+    }
+
+    .name_div_secondary hr {
+        width: 80%;
+        margin: 1vw auto;
+    }
+
+    .center {
+        text-align: center;
+        width: 100%;
+    }
+
+    .text-large {
+        font-size: 2.5vw;
+        font-weight: bold;
+        margin: 1vw 0;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .hyperlink {
+        color: #06F;
+        font-family: 'Inter', sans-serif;
+        font-size: 1.2vw;
+        font-weight: 500;
+        text-decoration: underline;
+        margin: 1vw 0;
+        display: block;
+    }
+
+    .table {
+        width: 100%;
+        margin: 1vw 0;
+        border-collapse: collapse;
+    }
+
+    .table th, .table td {
+        border: 1px solid #ddd;
+        padding: 0.5vw;
+    }
+
+    .table th {
+        background: #f4f4f4;
+    }
+
+    .customer_information_div {
+        width: 62.5vw;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        background: #FFF;
+        padding: 2vw;
+        margin-top: 3vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .customer_info_div hr {
+        width: 80%;
+        margin: 2vw auto;
+    }
+
+    .div {
+        margin: 2vw 0;
+        text-align: center;
+    }
+
+    .div a {
+        color: #06F;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .division_maybe a:hover {
+        text-decoration: underline;
+    }
+
+    .admin-section {
+        width: 30vw;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        background: #FFF;
+        padding: 2vw;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 3vw;
+    }
+
+    .admin-section-header {
+        font-size: 1.5vw;
+        font-weight: bold;
+        margin-bottom: 1vw;
+    }
+
+    .admin-section-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1vw;
+    }
+
+    .admin-section-content a {
+        color: #06F;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .admin-section-content a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<div class="admin_portal_margins">
+    <h1>Admin Portal</h1>
+</div>
+<div class="admin_portal_margin">
+
+    <div class="admin-section">
+        <div class="admin-section-header">User/Account Management</div>
+        <div class="admin-section-content">
+            <a href="/account">Own Account Details</a>
+            <a href="/customer_accounts">Customer Accounts</a>
+            <a href="/createStaffAccount">Create Staff Account</a>
+            <a href="/staff_accounts">Staff Accounts</a>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="admin-section-header">Product / Orders</div>
+        <div class="admin-section-content">
+            <a href="/createProduct">Create New Products</a>
+            <a href="/retrieveProducts">View New Products</a>
+            <a href="/customerOrder">Customer's Orders</a>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="admin-section-header">Feedbacks</div>
+        <div class="admin-section-content">
+            <a href="/retrieveFeedback">Retrieve Feedbacks</a>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="admin-section-header">Settings</div>
+        <div class="admin-section-content">
+            <a href="/logs">View Logs</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -31,71 +31,6 @@ app.register_blueprint(errors_bp)
 limiter = Limiter(key_func=get_remote_address, app=app)
 
 
-@app.after_request
-def add_csp_header(response):
-    csp = {
-        "default-src": "'self'",
-        "script-src": [
-            "'self'",
-            "https://code.jquery.com",
-            "https://cdnjs.cloudflare.com",
-            "https://cdn.jsdelivr.net",
-            "https://www.google.com",
-            "https://www.gstatic.com",
-            "https://kit.fontawesome.com",
-            "'unsafe-inline'",
-        ],
-        "style-src": [
-            "'self'",
-            "https://fonts.googleapis.com",
-            "https://cdnjs.cloudflare.com",
-            "https://cdn.jsdelivr.net",
-            "'unsafe-inline'",
-        ],
-        "img-src": [
-            "'self'",
-            "data:",
-            "https://images.unsplash.com",
-            "https://images.pexels.com",
-            "https://img.bestrecipes.com.au",
-            "https://img.kidspot.com.au",
-            "https://coffeeabros.com",
-            "https://www.recipegirl.com",
-            "https://www.imperialsugar.com",
-            "https://cdn.buttercms.com",
-            "https://www.tastingtable.com",
-            "https://feelgoodfoodie.net",
-            "https://images.immediate.co.uk",
-            "https://coffeebros.com/cdn/shop/articles/unnamed_be2775a1-186d-40c1-b094-488fa5fa4050.png",  # Removed the query parameter
-            "https://images.ctfassets.net/v601h1fyjgba/7cdNOhfEauvOFDfJx91p68/487c04ddacbc8228af9f852eea022397/Iced_Mocha_Hazelnut_Caffe.jpg",
-            "https://images.ctfassets.net/v601h1fyjgba/1vlXSpBbgUo9yLzh71tnOT/a1afdbe54a383d064576b5e628035f04/Iced_Americano.jpg"
-        ],
-        "font-src": [
-            "'self'",
-            "https://fonts.googleapis.com",
-            "https://fonts.gstatic.com",
-        ],
-        "connect-src": [
-            "'self'",
-        ],
-        "media-src": "'self'",
-        "object-src": "'none'",
-        "base-uri": "'self'",
-        "form-action": "'self'",
-        "frame-src": [
-            "'self'",
-            "https://www.google.com",
-        ],
-        "frame-ancestors": "'none'",
-        "upgrade-insecure-requests": "",
-    }
-
-    csp_directive = "; ".join([f"{k} {' '.join(v) if isinstance(v, list) else v}" for k, v in csp.items()])
-    response.headers['Content-Security-Policy'] = csp_directive
-
-    return response
-
-
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -527,6 +462,16 @@ def delete_account():
         flash('User not found.', 'danger')
 
     return redirect(url_for('home'))
+
+
+@app.route('/adminPortal')
+def admin_portal():
+    if session.get('role') != 'admin':
+        app.logger.warning('Unauthorized access attempt to admin portal page by user %s',
+                           session.get('username', 'unknown'))
+        return "Access Denied. This feature requires admin-level access!", 403
+
+    return render_template('AdminPortal.html')
 
 
 @app.route('/customerPortal/')
@@ -1167,7 +1112,6 @@ def retrieve_feedback():
     feedbacks = Feed_back.query.all()
     feedbacks_list = []
 
-    # Compile a list of feedback dictionaries for rendering
     for feedback in feedbacks:
         feedbacks_list.append({
             'id': feedback.id,
@@ -1195,3 +1139,11 @@ def delete_feedback(feedback_id):
         flash('An error occurred while deleting the feedback.', 'danger')
 
     return redirect(url_for('retrieve_feedback'))
+
+
+@app.route('/logs', methods=['GET'])
+def view_logs():
+    if session.get('role') != 'admin':
+        return "Access Denied. This feature requires admin-level access!", 403
+    logs = Log.query.order_by(Log.created_at.desc()).all()
+    return render_template('Logs.html', logs=logs)

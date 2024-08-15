@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+<style>
+    .log-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .log-table th, .log-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .log-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    .log-table tr:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Log Messages</h1>
+    <table class="log-table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Message</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ log.message }}</td>
+                <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
