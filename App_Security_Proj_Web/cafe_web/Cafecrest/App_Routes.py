@@ -1145,5 +1145,9 @@ def delete_feedback(feedback_id):
 def view_logs():
     if session.get('role') != 'admin':
         return "Access Denied. This feature requires admin-level access!", 403
-    logs = Log.query.order_by(Log.created_at.desc()).all()
+
+    logs = Log.query.filter(
+        Log.message.ilike('%warning%') | Log.message.ilike('%error%')
+    ).order_by(Log.created_at.desc()).all()
+
     return render_template('Logs.html', logs=logs)

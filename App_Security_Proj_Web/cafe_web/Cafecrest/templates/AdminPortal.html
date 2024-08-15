@@ -2,6 +2,11 @@
 {% block content %}
 
 <style>
+    body {
+        background-color: #EAECEE;
+        color: #654321;
+    }
+
     .admin_portal_margin {
         display: flex;
         justify-content: center;
@@ -15,119 +20,26 @@
         margin-bottom: 2vw;
     }
 
-    .name_div {
-        width: 30vw;
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        background: #FFF;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 2vw;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .name_div_secondary {
-        width: 100%;
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        background: #F4DFC8;
-        padding: 1vw;
-        margin-top: 2vw;
-    }
-
-    .name_div_secondary hr {
-        width: 80%;
-        margin: 1vw auto;
-    }
-
-    .center {
-        text-align: center;
-        width: 100%;
-    }
-
-    .text-large {
-        font-size: 2.5vw;
-        font-weight: bold;
-        margin: 1vw 0;
-    }
-
-    .text-center {
-        text-align: center;
-    }
-
-    .hyperlink {
-        color: #06F;
-        font-family: 'Inter', sans-serif;
-        font-size: 1.2vw;
-        font-weight: 500;
-        text-decoration: underline;
-        margin: 1vw 0;
-        display: block;
-    }
-
-    .table {
-        width: 100%;
-        margin: 1vw 0;
-        border-collapse: collapse;
-    }
-
-    .table th, .table td {
-        border: 1px solid #ddd;
-        padding: 0.5vw;
-    }
-
-    .table th {
-        background: #f4f4f4;
-    }
-
-    .customer_information_div {
-        width: 62.5vw;
-        border-radius: 20px;
-        border: 1px solid #ddd;
-        background: #FFF;
-        padding: 2vw;
-        margin-top: 3vw;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .customer_info_div hr {
-        width: 80%;
-        margin: 2vw auto;
-    }
-
-    .div {
-        margin: 2vw 0;
-        text-align: center;
-    }
-
-    .div a {
-        color: #06F;
-        text-decoration: none;
-        font-weight: bold;
-    }
-
-    .division_maybe a:hover {
-        text-decoration: underline;
-    }
-
     .admin-section {
-        width: 30vw;
+        width: 45%;
         border-radius: 20px;
         border: 1px solid #ddd;
         background: #FFF;
         padding: 2vw;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         margin-bottom: 3vw;
+        margin-right: 2%;
+    }
+
+    .admin-section:last-child {
+        margin-right: 0;
     }
 
     .admin-section-header {
         font-size: 1.5vw;
         font-weight: bold;
         margin-bottom: 1vw;
+        color: #654321;
     }
 
     .admin-section-content {
@@ -137,7 +49,7 @@
     }
 
     .admin-section-content a {
-        color: #06F;
+        color: #654321;
         text-decoration: none;
         font-weight: 500;
     }
@@ -147,41 +59,60 @@
     }
 </style>
 
-<div class="admin_portal_margins">
-    <h1>Admin Portal</h1>
-</div>
-<div class="admin_portal_margin">
-
-    <div class="admin-section">
-        <div class="admin-section-header">User/Account Management</div>
-        <div class="admin-section-content">
-            <a href="/account">Own Account Details</a>
-            <a href="/customer_accounts">Customer Accounts</a>
-            <a href="/createStaffAccount">Create Staff Account</a>
-            <a href="/staff_accounts">Staff Accounts</a>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center mb-4">
+            <h1 class="display-4">Admin Portal</h1>
         </div>
     </div>
 
-    <div class="admin-section">
-        <div class="admin-section-header">Product / Orders</div>
-        <div class="admin-section-content">
-            <a href="/createProduct">Create New Products</a>
-            <a href="/retrieveProducts">View New Products</a>
-            <a href="/customerOrder">Customer's Orders</a>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card bg-light shadow-sm rounded">
+                <div class="card-body">
+                    <h5 class="card-title">User(Account) Management</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="/account" class="text-dark">Own Account Details</a></li>
+                        <li class="list-group-item"><a href="/customer_accounts" class="text-dark">Customer Accounts</a></li>
+                        <li class="list-group-item"><a href="/createStaffAccount" class="text-dark">Create Staff Account</a></li>
+                        <li class="list-group-item"><a href="/staff_accounts" class="text-dark">Staff Accounts</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-light shadow-sm rounded">
+                <div class="card-body">
+                    <h5 class="card-title">Product / Orders</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="/createProduct" class="text-dark">Create New Products</a></li>
+                        <li class="list-group-item"><a href="/retrieveProducts" class="text-dark">View New Products</a></li>
+                        <li class="list-group-item"><a href="/customerOrder" class="text-dark">Customer's Orders</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="admin-section">
-        <div class="admin-section-header">Feedbacks</div>
-        <div class="admin-section-content">
-            <a href="/retrieveFeedback">Retrieve Feedbacks</a>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card bg-light shadow-sm rounded">
+                <div class="card-body">
+                    <h5 class="card-title">Feedbacks</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="/retrieveFeedback" class="text-dark">Retrieve Feedbacks</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <div class="admin-section">
-        <div class="admin-section-header">Settings</div>
-        <div class="admin-section-content">
-            <a href="/logs">View Logs</a>
+        <div class="col-md-6">
+            <div class="card bg-light shadow-sm rounded">
+                <div class="card-body">
+                    <h5 class="card-title">Settings</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><a href="/logs" class="text-dark">View Logs</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
